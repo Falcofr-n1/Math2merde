@@ -1,0 +1,3527 @@
+<!DOCTYPE html>
+<html lang="fr"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxODI4MDQ5NzMxODQ2MDY0MjU0MCIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzRhZmU4Nzk0N2VhYjYyMzlfY2FwX2JhY19tYXRoc18xZXJlLmh0bWwtODMyIn0sImV4cCI6MTc5NTc3MTQwNCwiaWF0IjoxNzk1NzY3ODA0LCJhbGciOiJSUzI1NiJ9.DR-H98L_iXeTp0FcctmVZJQRM_gaDP15N1fsDmxkcjlaRwa87LeN3062O9rbqXGsDG85kgyTgxjajIzCc7G8935QhH4dMJ_atFf1DVSJOQqO-1APPEDI0z8A11TJafl8Wes8pUPWxVEeRXt2sKBWHbSopbVZJG6fzpZytzzBJTP1S9E1t6rd3JGSVgsmVh4eYN2opsESoP7_MLgh1E1uF9dJFmCK89_F0v0xc8NaClyFFHnurVtGWF8K-zwShv24uJeJd7UG3m3hYYiiQRxakB-jME45b6KAPlBgdGp5ckujhJiDqHChSpHDMFDoqwOlk1VfaOYUNHN8BipvFQwSUw","c_4afe87947eab6239_cap_bac_maths_1ere.html-832")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.i=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.extensions="";var l=0,t=null,r=null,q=[],F=new TextEncoder,
+G=new TextDecoder;c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*
+16|0;return(f==="x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;
+(g=t)==null||g.postMessage(a)}};Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function() {
+  const OVERLAY_SELECTOR =
+    'dialog[open], [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="combobox"]';
+
+  function isVisibleOverlay(element) {
+    if (element.closest('[hidden], [aria-hidden="true"], [inert]')) {
+      return false;
+    }
+    if (window.getComputedStyle(element).visibility === 'hidden') {
+      return false;
+    }
+    for (let cur = element; cur; cur = cur.parentElement) {
+      if (window.getComputedStyle(cur).display === 'none') {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function hasOpenOverlay() {
+    const candidates = document.querySelectorAll(OVERLAY_SELECTOR);
+    for (let i = 0; i < candidates.length; i++) {
+      if (isVisibleOverlay(candidates[i])) {
+        return true;
+      }
+    }
+    try {
+      if (document.querySelector('[popover]:popover-open')) {
+        return true;
+      }
+    } catch (e) {
+      // Ignore engines that do not support :popover-open.
+    }
+    return false;
+  }
+
+  function isNonEmptySearchInput(target) {
+    return (
+      Boolean(target) &&
+      target.tagName === 'INPUT' &&
+      typeof target.type === 'string' &&
+      target.type.toLowerCase() === 'search' &&
+      typeof target.value === 'string' &&
+      target.value.length > 0
+    );
+  }
+
+  function shouldIgnoreEscape(event) {
+    return (
+      event.key !== 'Escape' ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.isComposing ||
+      event.repeat ||
+      event.keyCode === 229 ||
+      isNonEmptySearchInput(event.target)
+    );
+  }
+
+  let shouldIgnoreCaptureState = false;
+
+  window.addEventListener(
+    'keydown',
+    function(event) {
+      if (event.key === 'Escape') {
+        shouldIgnoreCaptureState =
+          hasOpenOverlay() || isNonEmptySearchInput(event.target);
+      }
+    },
+    {capture: true},
+  );
+
+  window.addEventListener('keydown', function(event) {
+    if (
+      shouldIgnoreEscape(event) ||
+      event.defaultPrevented ||
+      shouldIgnoreCaptureState
+    ) {
+      return;
+    }
+    const wasBlockedOnCapture = shouldIgnoreCaptureState;
+    queueMicrotask(function() {
+      if (event.defaultPrevented || wasBlockedOnCapture) {
+        return;
+      }
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({'type': 'escapeKey'}, '*');
+      }
+    });
+  });
+})();</script><script data-bard-client-injected="true">(function() {
+  function normalizeSlug(str) {
+    try {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^p{L}p{N}s_-]/gu, '')
+        .replace(/s+/g, '-');
+    } catch (e) {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9s_-]/g, '')
+        .replace(/s+/g, '-');
+    }
+  }
+
+  function findTargetElement(hash) {
+    if (!hash || hash === '#') {
+      return null;
+    }
+    const rawId = hash.startsWith('#') ? hash.slice(1) : hash;
+    let decodedId = rawId;
+    try {
+      decodedId = decodeURIComponent(rawId);
+    } catch (e) {
+      // Ignore URI malformed errors.
+    }
+
+    // 1. Direct ID match (raw and decoded).
+    let target = document.getElementById(rawId) || document.getElementById(decodedId);
+    if (target) {
+      return target;
+    }
+
+    // 2. Name attribute match (<a name="...">).
+    try {
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        target =
+          document.querySelector('[name="' + CSS.escape(rawId) + '"]') ||
+          document.querySelector('[name="' + CSS.escape(decodedId) + '"]');
+      } else {
+        const namedElements = document.getElementsByName(rawId);
+        if (namedElements && namedElements.length > 0) {
+          return namedElements[0];
+        }
+      }
+    } catch (e) {
+      // Ignore querySelector syntax errors.
+    }
+    if (target) {
+      return target;
+    }
+
+    // 3. Match heading text by slug (for Markdown TOCs where headings lack explicit IDs).
+    const targetSlug = normalizeSlug(decodedId);
+    if (targetSlug) {
+      for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (normalizeSlug(heading.textContent || '') === targetSlug) {
+          return heading;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    const anchor = target && typeof target.closest === 'function' ? target.closest('a') : null;
+    if (!anchor) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href');
+    if (
+      !href ||
+      href.trim().toLowerCase().startsWith('javascript:') ||
+      anchor.hasAttribute('download')
+    ) {
+      return;
+    }
+
+    // Check if the link is an in-page hash / anchor link.
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const targetElement = findTargetElement(href);
+      if (targetElement) {
+        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      return;
+    }
+
+    // Check if the URL has the same origin/pathname but with a hash.
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        url.hash &&
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname
+      ) {
+        event.preventDefault();
+        const targetElement = findTargetElement(url.hash);
+        if (targetElement) {
+          targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return;
+      }
+    } catch (e) {
+      // Fall through if URL parsing fails.
+    }
+
+    // For all external or full navigation links, prevent iframe-level navigation
+    // (which breaks in AGSA WebView or sandboxed iframes) and ensure they open
+    // safely in a new tab/window.
+    if (anchor.target !== '_blank') {
+      event.preventDefault();
+      window.open(anchor.href, '_blank', 'noopener,noreferrer');
+    }
+  }, {capture: true});
+})();</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cap Bac Maths — 1ère Générale (Tronc Commun)</title>
+  <style>
+    :root {
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #475569;
+      --border-light: #e2e8f0;
+
+      /* Codes couleurs pédagogiques */
+      --blue-primary: #2563eb;
+      --blue-soft: #eff6ff;
+      --blue-border: #bfdbfe;
+
+      --amber-primary: #d97706;
+      --amber-soft: #fffbeb;
+      --amber-border: #fde68a;
+
+      --green-primary: #059669;
+      --green-soft: #ecfdf5;
+      --green-border: #a7f3d0;
+
+      --purple-primary: #4f46e5;
+      --purple-soft: #eef2ff;
+      --purple-border: #c7d2fe;
+
+      --red-primary: #dc2626;
+      --red-soft: #fef2f2;
+      --red-border: #fecaca;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    /* En-tête & Barre d'actions */
+    header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      color: #ffffff;
+      padding: 20px 16px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+    }
+
+    .header-inner {
+      max-width: 1050px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand h1 {
+      margin: 0 0 4px 0;
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .brand p {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #dbeafe;
+    }
+
+    .action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn-action {
+      background-color: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      padding: 9px 14px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-action:hover {
+      background-color: #ffffff;
+      color: #1e3a8a;
+    }
+
+    /* Navigation par onglets */
+    nav.tabs-nav {
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--border-light);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    .tabs-container {
+      max-width: 1050px;
+      margin: 0 auto;
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    .tab-btn {
+      background-color: #f1f5f9;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      background-color: #e2e8f0;
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      background-color: var(--blue-primary);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+    }
+
+    /* Conteneur principal */
+    main {
+      max-width: 1050px;
+      margin: 24px auto 60px auto;
+      padding: 0 16px;
+    }
+
+    .module-panel {
+      display: none;
+    }
+
+    .module-panel.active {
+      display: block;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* En-tête de module */
+    .module-intro {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-left: 6px solid var(--blue-primary);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+
+    .module-intro h2 {
+      margin: 0 0 8px 0;
+      color: #0f172a;
+      font-size: 1.45rem;
+    }
+
+    .module-intro p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 1.02rem;
+    }
+
+    /* Cartes de notions (Cours) */
+    .lesson-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-bottom: 22px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      break-inside: avoid;
+    }
+
+    .lesson-card h3 {
+      margin: 0 0 14px 0;
+      color: var(--blue-primary);
+      font-size: 1.22rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 10px;
+    }
+
+    /* Métaphore du quotidien */
+    .metaphor-box {
+      background-color: var(--blue-soft);
+      border: 1px solid var(--blue-border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+
+    .metaphor-title {
+      font-weight: 700;
+      color: #1e40af;
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.98rem;
+    }
+
+    /* Étapes minuscules */
+    .steps-list {
+      list-style: none;
+      padding: 0;
+      margin: 14px 0;
+    }
+
+    .steps-list li {
+      position: relative;
+      padding-left: 34px;
+      margin-bottom: 10px;
+    }
+
+    .step-badge {
+      position: absolute;
+      left: 0;
+      top: 2px;
+      width: 24px;
+      height: 24px;
+      background-color: var(--blue-primary);
+      color: #ffffff;
+      border-radius: 50%;
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Astuce Anti-Blocage */
+    .tip-box {
+      background-color: var(--amber-soft);
+      border: 1px solid var(--amber-border);
+      border-left: 5px solid var(--amber-primary);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 16px 0;
+    }
+
+    .tip-title {
+      font-weight: 800;
+      color: #92400e;
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.98rem;
+    }
+
+    /* Exemple résolu */
+    .example-box {
+      background-color: var(--green-soft);
+      border: 1px solid var(--green-border);
+      border-left: 5px solid var(--green-primary);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 16px;
+    }
+
+    .example-title {
+      font-weight: 800;
+      color: #065f46;
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.98rem;
+    }
+
+    /* Fractions & écritures maths propres */
+    .math {
+      font-family: 'Cambria Math', 'Times New Roman', serif;
+      font-weight: 600;
+      font-size: 1.08em;
+      color: #0f172a;
+    }
+
+    .frac {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      margin: 0 3px;
+      font-size: 0.92em;
+    }
+
+    .frac-num {
+      border-bottom: 1.5px solid #0f172a;
+      padding: 0 4px 1px 4px;
+      line-height: 1.15;
+    }
+
+    .frac-den {
+      padding: 1px 4px 0 4px;
+      line-height: 1.15;
+    }
+
+    /* Conteneur SVG */
+    .svg-wrapper {
+      margin: 16px 0;
+      padding: 12px;
+      background-color: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      text-align: center;
+      overflow-x: auto;
+    }
+
+    .svg-wrapper svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* Tableaux pédagogiques */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 0.95rem;
+    }
+
+    .data-table th, .data-table td {
+      border: 1px solid #cbd5e1;
+      padding: 8px 12px;
+      text-align: center;
+    }
+
+    .data-table th {
+      background-color: #f1f5f9;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Zone d'exercices interactifs */
+    .exercises-section {
+      background-color: var(--purple-soft);
+      border: 2px solid var(--purple-border);
+      border-radius: 16px;
+      padding: 22px;
+      margin-top: 28px;
+    }
+
+    .exercises-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--purple-border);
+    }
+
+    .exercises-header h3 {
+      margin: 0;
+      color: #312e81;
+      font-size: 1.25rem;
+    }
+
+    .btn-regen {
+      background-color: var(--purple-primary);
+      color: #ffffff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-regen:hover {
+      background-color: #4338ca;
+    }
+
+    .btn-regen:active {
+      transform: scale(0.98);
+    }
+
+    .exo-card {
+      background-color: #ffffff;
+      border: 1px solid var(--purple-border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      break-inside: avoid;
+    }
+
+    .exo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .exo-badge {
+      background-color: var(--purple-soft);
+      color: var(--purple-primary);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .exo-question {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0 0 14px 0;
+    }
+
+    .exo-input-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .exo-input {
+      padding: 10px 14px;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 1rem;
+      width: 220px;
+      max-width: 100%;
+      transition: border-color 0.2s;
+    }
+
+    .exo-input:focus {
+      outline: none;
+      border-color: var(--purple-primary);
+    }
+
+    .exo-input:disabled {
+      background-color: #f1f5f9;
+      color: #475569;
+    }
+
+    .qcm-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+
+    .qcm-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      background-color: #f8fafc;
+      transition: all 0.15s;
+    }
+
+    .qcm-label:hover {
+      border-color: var(--purple-primary);
+      background-color: var(--purple-soft);
+    }
+
+    .btn-validate {
+      background-color: var(--green-primary);
+      color: #ffffff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-validate:hover {
+      background-color: #047857;
+    }
+
+    .btn-validate:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .exo-warning {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background-color: var(--amber-soft);
+      border: 1px solid var(--amber-border);
+      color: #92400e;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      display: none;
+    }
+
+    .exo-feedback {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .exo-feedback.correct {
+      background-color: var(--green-soft);
+      border: 1px solid var(--green-border);
+      border-left: 5px solid var(--green-primary);
+    }
+
+    .exo-feedback.wrong {
+      background-color: var(--red-soft);
+      border: 1px solid var(--red-border);
+      border-left: 5px solid var(--red-primary);
+    }
+
+    .feedback-status {
+      font-weight: 800;
+      font-size: 1.02rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .exo-feedback.correct .feedback-status { color: #065f46; }
+    .exo-feedback.wrong .feedback-status { color: #991b1b; }
+
+    .correction-steps {
+      margin: 8px 0 0 0;
+      padding-left: 18px;
+      color: #1e293b;
+      font-size: 0.96rem;
+    }
+
+    /* Barre spéciale Module 5 (Mixte Bac + Chrono) */
+    .bac-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background-color: #ffffff;
+      border: 1px solid var(--purple-border);
+      padding: 14px 18px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+    }
+
+    .timer-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .score-pill {
+      background-color: #1e3a8a;
+      color: #ffffff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    /* Ligne vierge visible UNIQUEMENT à l'impression */
+    .print-blank-area {
+      display: none;
+    }
+
+    /* =========================================================
+       RÈGLES D'IMPRESSION PDF (FEUILLE VIERGE & PROPRE)
+       ========================================================= */
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt;
+      }
+
+      header {
+        background: none !important;
+        color: #000000 !important;
+        border-bottom: 2px solid #000000;
+        padding: 0 0 10px 0;
+        box-shadow: none !important;
+      }
+
+      .brand p {
+        color: #333333 !important;
+      }
+
+      /* Cacher tous les éléments interactifs */
+      .action-bar,
+      nav.tabs-nav,
+      .btn-regen,
+      .exo-input-row,
+      .exo-warning,
+      .exo-feedback,
+      .bac-toolbar {
+        display: none !important;
+      }
+
+      main {
+        margin: 12px 0 0 0;
+        padding: 0;
+        max-width: 100%;
+      }
+
+      /* Mode impression globale de tout le programme */
+      body.print-all-modules .module-panel {
+        display: block !important;
+        page-break-after: always;
+        break-after: page;
+      }
+
+      body.print-all-modules .module-panel:last-child {
+        page-break-after: auto;
+        break-after: auto;
+      }
+
+      .lesson-card,
+      .exo-card,
+      .module-intro,
+      .tip-box,
+      .metaphor-box,
+      .example-box {
+        box-shadow: none !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .exercises-section {
+        background-color: #ffffff !important;
+        border: 1.5px solid #000000 !important;
+      }
+
+      /* Afficher la zone vierge à remplir au stylo */
+      .print-blank-area {
+        display: block !important;
+        margin-top: 14px;
+        padding-top: 10px;
+        border-top: 1px dashed #94a3b8;
+        font-size: 10.5pt;
+        color: #000000;
+      }
+
+      .print-lines {
+        margin-top: 10px;
+        line-height: 2.1;
+        color: #475569;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .brand h1 { font-size: 1.25rem; }
+      .lesson-card { padding: 16px; }
+      .exercises-section { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <h1>🎯 Cap Bac Maths — 1ère Générale</h1>
+        <p>Tronc Commun (Enseignement scientifique &amp; mathématique) • Méthode pas-à-pas anti-blocage</p>
+      </div>
+      <div class="action-bar">
+        <button class="btn-action" onclick="printCurrentModule()" title="Imprimer uniquement l'onglet affiché">
+          🖨️ Imprimer ce module (PDF)
+        </button>
+        <button class="btn-action" onclick="printAllModules()" title="Imprimer l'intégralité du cours et des fiches vierges">
+          📚 Imprimer TOUT le programme (PDF)
+        </button>
+        <button class="btn-action" onclick="downloadSelfHTML()" title="Sauvegarder ce fichier sur ton ordinateur ou téléphone">
+          💾 Télécharger le fichier .html
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs-nav" aria-label="Modules du programme">
+    <div class="tabs-container">
+      <button class="tab-btn active" data-tab="mod0" onclick="switchTab('mod0')">Module 0 : Kit de Survie</button>
+      <button class="tab-btn" data-tab="mod1" onclick="switchTab('mod1')">Module 1 : Proportions &amp; Évolutions</button>
+      <button class="tab-btn" data-tab="mod2" onclick="switchTab('mod2')">Module 2 : Probabilités &amp; Arbres</button>
+      <button class="tab-btn" data-tab="mod3" onclick="switchTab('mod3')">Module 3 : Croissance Linéaire</button>
+      <button class="tab-btn" data-tab="mod4" onclick="switchTab('mod4')">Module 4 : Croissance Exponentielle</button>
+      <button class="tab-btn" data-tab="mod5" onclick="switchTab('mod5')">Module 5 : Entraînement Mixte Bac</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- ===================================================================
+         MODULE 0 : KIT DE SURVIE (LES BASES)
+         =================================================================== -->
+    <section id="mod0" class="module-panel active">
+      <div class="module-intro">
+        <h2>Module 0 : Le Kit de Survie (Les 4 outils indispensables)</h2>
+        <p>Impossible de construire une maison sans fondations. Ici, pas de théorie compliquée : uniquement 4 réflexes visuels pour ne plus jamais bloquer sur les calculs de base au lycée.</p>
+      </div>
+
+      <!-- Notion 0.1 : Règle des signes -->
+      <article class="lesson-card">
+        <h3>1. La règle des signes (+ et −) : ne plus jamais confondre</h3>
+        <div class="metaphor-box">
+          <span class="metaphor-title">💡 L'image du quotidien : L'Ascenseur vs Les Amis/Ennemis</span>
+          Attention, il y a <strong>deux situations totalement différentes</strong> :<br>
+          • Quand on <strong>additionne ou soustrait</strong> (<span class="math">−5 + 3</span>), on est dans un <strong>ascenseur</strong> (étages positifs au-dessus de 0, sous-sols négatifs en dessous de 0).<br>
+          • Quand on <strong>multiplie ou divise</strong> (<span class="math">−5 × (−3)</span>), on utilise la règle des <strong>amis et ennemis</strong>.
+        </div>
+
+        <ul class="steps-list">
+          <li><span class="step-badge">1</span><strong>Pour + et − (L'Ascenseur) :</strong> Je pars du premier nombre. Si j'ajoute <span class="math">+</span>, je monte. Si je retire <span class="math">−</span>, je descends. Exemple : <span class="math">−4 + 6</span> → je suis au sous-sol −4, je monte de 6 étages, j'arrive à <strong>+2</strong>.</li>
+          <li><span class="step-badge">2</span><strong>Pour × et ÷ (Amis / Ennemis) :</strong> Deux signes identiques donnent <strong>+</strong> (les amis de mes amis sont mes amis ; les ennemis de mes ennemis sont mes amis). Deux signes différents donnent <strong>−</strong>.</li>
+        </ul>
+
+        <div class="tip-box">
+          <span class="tip-title">⚡ Astuce Anti-Blocage : Deux signes qui se touchent</span>
+          Si tu vois <span class="math">7 − (−3)</span>, deux signes « − » se touchent séparés juste par une parenthèse : ils fusionnent en un gros <strong>+</strong> ! Donc <span class="math">7 − (−3) = 7 + 3 = 10</span>.
+        </div>
+
+        <div class="example-box">
+          <span class="example-title">✅ Exemple résolu pas-à-pas</span>
+          Calculer <span class="math">A = −3 × (−4) − 5</span> :<br>
+          • <strong>Étape 1 :</strong> La multiplication est prioritaire : <span class="math">−3 × (−4) = +12</span> (deux signes moins → résultat positif).<br>
+          • <strong>Étape 2 :</strong> On termine avec l'ascenseur : <span class="math">12 − 5 = 7</span>.
+        </div>
+      </article>
+
+      <!-- Notion 0.2 : Les Fractions -->
+      <article class="lesson-card">
+        <h3>2. Les Fractions : multiplier tout droit, additionner en papillon</h3>
+        <div class="metaphor-box">
+          <span class="metaphor-title">🍕 L'image du quotidien : Les parts de pizza</span>
+          Dans une fraction <span class="frac"><span class="frac-num">3</span><span class="frac-den">4</span></span>, le chiffre du bas (4) dit en combien de parts la pizza est coupée. Le chiffre du haut (3) dit combien de parts tu manges. On ne peut additionner directement que des parts de <strong>même taille</strong> !
+        </div>
+
+        <ul class="steps-list">
+          <li><span class="step-badge">1</span><strong>Multiplier deux fractions :</strong> C'est le plus facile ! On multiplie <strong>tout droit</strong> : haut × haut, et bas × bas.</li>
+          <li><span class="step-badge">2</span><strong>Additionner ou soustraire (Méthode du Papillon) :</strong> On multiplie en diagonale (les ailes du papillon) pour le haut, et on multiplie les deux nombres du bas ensemble pour le dénominateur.</li>
+          <li><span class="step-badge">3</span><strong>Simplifier :</strong> Si le haut et le bas sont dans la même table (ex: table de 2, 5 ou 10), on divise le haut et le bas par ce même nombre.</li>
+        </ul>
+
+        <div class="svg-wrapper">
+          <svg width="460" height="145" viewBox="0 0 460 145" aria-label="Méthode du papillon pour additionner deux fractions">
+            <rect x="5" y="5" width="450" height="135" rx="10" fill="#f8fafc" stroke="#cbd5e1"></rect>
+            <text x="230" y="26" text-anchor="middle" font-weight="bold" font-size="14" fill="#1e3a8a">La technique du Papillon : a/b + c/d</text>
+            <!-- Fraction 1 -->
+            <text x="75" y="62" text-anchor="middle" font-size="18" font-weight="bold" fill="#0f172a">2</text>
+            <line x1="60" y1="70" x2="90" y2="70" stroke="#0f172a" stroke-width="2"></line>
+            <text x="75" y="92" text-anchor="middle" font-size="18" font-weight="bold" fill="#0f172a">3</text>
+            <text x="115" y="76" text-anchor="middle" font-size="20" font-weight="bold" fill="#2563eb">+</text>
+            <!-- Fraction 2 -->
+            <text x="155" y="62" text-anchor="middle" font-size="18" font-weight="bold" fill="#0f172a">1</text>
+            <line x1="140" y1="70" x2="170" y2="70" stroke="#0f172a" stroke-width="2"></line>
+            <text x="155" y="92" text-anchor="middle" font-size="18" font-weight="bold" fill="#0f172a">5</text>
+            <!-- Ailes du papillon -->
+            <ellipse cx="115" cy="73" rx="54" ry="18" transform="rotate(-24 115 73)" fill="none" stroke="#d97706" stroke-width="2" stroke-dasharray="4 2"></ellipse>
+            <ellipse cx="115" cy="73" rx="54" ry="18" transform="rotate(24 115 73)" fill="none" stroke="#059669" stroke-width="2" stroke-dasharray="4 2"></ellipse>
+            <!-- Bas -->
+            <path d="M 75 98 Q 115 122 155 98" fill="none" stroke="#4f46e5" stroke-width="2"></path>
+            <text x="115" y="126" text-anchor="middle" font-size="12" font-weight="bold" fill="#4f46e5">3 × 5 = 15</text>
+            <!-- Résultat -->
+            <text x="205" y="76" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">=</text>
+            <text x="325" y="62" text-anchor="middle" font-size="16" font-weight="bold" fill="#0f172a">(2 × 5) + (3 × 1)</text>
+            <line x1="235" y1="70" x2="415" y2="70" stroke="#0f172a" stroke-width="2"></line>
+            <text x="325" y="92" text-anchor="middle" font-size="16" font-weight="bold" fill="#4f46e5">3 × 5</text>
+            <text x="325" y="122" text-anchor="middle" font-size="15" font-weight="bold" fill="#059669">= (10 + 3) / 15 = 13 / 15</text>
+          </svg>
+        </div>
+      </article>
+
+      <!-- Notion 0.3 : Les Pourcentages -->
+      <article class="lesson-card">
+        <h3>3. Les Pourcentages de base : calculer sans réfléchir</h3>
+        <div class="metaphor-box">
+          <span class="metaphor-title">🏷️ L'image du quotidien : Couper un billet de 100 €</span>
+          Dire « <span class="math">p %</span> », cela veut littéralement dire « <span class="math">p</span> divisé par <span class="math">100</span> ». Calculer un pourcentage d'un prix, c'est juste multiplier le prix par <span class="frac"><span class="frac-num">p</span><span class="frac-den">100</span></span>.
+        </div>
+
+        <div class="tip-box">
+          <span class="tip-title">⚡ Astuce Anti-Blocage : Les 4 pourcentages réflexes de tête</span>
+          • <strong>10 %</strong> d'un nombre → Je décale la virgule d'<strong>1 rang vers la gauche</strong> (je divise par 10). Ex : 10 % de 85 € = <strong>8,50 €</strong>.<br>
+          • <strong>50 %</strong> d'un nombre → Je prends la <strong>moitié</strong> (÷ 2). Ex : 50 % de 80 € = <strong>40 €</strong>.<br>
+          • <strong>25 %</strong> d'un nombre → Je prends le <strong>quart</strong> (moitié de la moitié). Ex : 25 % de 80 € = <strong>20 €</strong>.<br>
+          • <strong>N'importe quel %</strong> (ex : 18 % de 240) → Je tape <span class="math">240 × 18 ÷ 100</span> (ou <span class="math">240 × 0,18</span>).
+        </div>
+      </article>
+
+      <!-- Notion 0.4 : Isoler x -->
+      <article class="lesson-card">
+        <h3>4. Isoler <span class="math">x</span> dans une équation (<span class="math">ax + b = c</span>)</h3>
+        <div class="metaphor-box">
+          <span class="metaphor-title">⚖️ L'image du quotidien : Le Pont « = » qui change les costumes</span>
+          Ton objectif est de laisser <span class="math">x</span> <strong>tout seul</strong> d'un côté du signe <span class="math">=</span>. Pour cela, tu dois envoyer tous les autres nombres de l'autre côté du pont <span class="math">=</span>. À chaque fois qu'un nombre traverse le pont, il change d'opération :
+        </div>
+
+        <ul class="steps-list">
+          <li><span class="step-badge">1</span><strong>On débarrasse d'abord les « + » et les « − » :</strong> Un <span class="math">+</span> qui traverse devient <span class="math">−</span>. Un <span class="math">−</span> qui traverse devient <span class="math">+</span>.</li>
+          <li><span class="step-badge">2</span><strong>On débarrasse ensuite le nombre collé à <span class="math">x</span> :</strong> Un nombre collé à <span class="math">x</span> est une multiplication (<span class="math">3x</span> veut dire <span class="math">3 × x</span>). Quand il traverse le pont, il passe en bas d'une division (<span class="math">÷</span>).</li>
+        </ul>
+
+        <div class="example-box">
+          <span class="example-title">✅ Exemple résolu : Résoudre <span class="math">4x + 5 = 21</span></span>
+          • <strong>Étape 1 :</strong> Le <span class="math">+ 5</span> traverse le pont et devient <span class="math">− 5</span> → <span class="math">4x = 21 − 5</span> donc <span class="math">4x = 16</span>.<br>
+          • <strong>Étape 2 :</strong> Le <span class="math">4</span> (qui multiplie <span class="math">x</span>) traverse et divise → <span class="math">x = 16 ÷ 4 = 4</span>.
+        </div>
+      </article>
+
+      <!-- Zone d'exercices Module 0 -->
+      <div class="exercises-section" id="exo-zone-mod0">
+        <div class="exercises-header">
+          <h3>✏️ Exercices rapides — Vérifie si tu as compris</h3>
+          <button class="btn-regen" onclick="buildExercisesForModule('mod0')">
+            🔄 Nouveaux exercices (Nombres aléatoires)
+          </button>
+        </div>
+      
+          <div class="exo-card" id="card-mod0-exo-0">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 1 • Règle des signes</span>
+            </div>
+            <p class="exo-question">Calculer : <span class="math">-3 × (-6) − 10</span></p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod0-exo-0" placeholder="Ex : 15" onkeydown="if(event.key==='Enter') validateExercise('mod0', 0)">
+          
+              <button class="btn-validate" id="btn-mod0-exo-0" onclick="validateExercise('mod0', 0)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod0-exo-0">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod0-exo-0"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod0-exo-1">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 2 • Fractions</span>
+            </div>
+            <p class="exo-question">Calculer le produit : <span class="frac"><span class="frac-num">5</span><span class="frac-den">5</span></span> × <span class="frac"><span class="frac-num">3</span><span class="frac-den">5</span></span> (écris sous forme de fraction ex: 6/35)</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod0-exo-1" placeholder="Ex : 6/35" onkeydown="if(event.key==='Enter') validateExercise('mod0', 1)">
+          
+              <button class="btn-validate" id="btn-mod0-exo-1" onclick="validateExercise('mod0', 1)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod0-exo-1">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod0-exo-1"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod0-exo-2">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 3 • Pourcentages</span>
+            </div>
+            <p class="exo-question">Calculer <strong>30 %</strong> de <strong>300 €</strong> (montant d'une remise sur une paire de baskets).</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod0-exo-2" placeholder="Montant en €" onkeydown="if(event.key==='Enter') validateExercise('mod0', 2)">
+          
+              <button class="btn-validate" id="btn-mod0-exo-2" onclick="validateExercise('mod0', 2)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod0-exo-2">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod0-exo-2"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod0-exo-3">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 4 • Équation (Isoler x)</span>
+            </div>
+            <p class="exo-question">Résoudre l'équation : <span class="math">3x + 14 = 35</span>. Que vaut <span class="math">x</span> ?</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod0-exo-3" placeholder="Valeur de x" onkeydown="if(event.key==='Enter') validateExercise('mod0', 3)">
+          
+              <button class="btn-validate" id="btn-mod0-exo-3" onclick="validateExercise('mod0', 3)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod0-exo-3">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod0-exo-3"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         MODULE 1 : PROPORTIONS & ÉVOLUTIONS
+         =================================================================== -->
+    <section id="mod1" class="module-panel">
+      <div class="module-intro">
+        <h2>Module 1 : Information chiffrée, Proportions &amp; Évolutions</h2>
+        <p>C'est le chapitre le plus rentable au Bac : des questions très concrètes sur des prix, des sondages ou des populations. Une seule baguette magique suffit pour tout réussir : le Coefficient Multiplicateur.</p>
+      </div>
+
+      <!-- Notion 1.1 : Proportion d'une proportion -->
+      <article class="lesson-card">
+        <h3>1. Proportion d'une proportion (Le pourcentage d'un pourcentage)</h3>
+        <div class="metaphor-box">
+          <span class="metaphor-title">🎒 L'image du quotidien : Le filtre en deux étapes</span>
+          Dans un lycée, <strong>40 %</strong> des élèves sont en 1ère, et parmi ces élèves de 1ère, <strong>25 %</strong> font espagnol. Quelle est la proportion d'élèves du lycée qui sont en 1ère ET font espagnol ? On applique deux filtres à la suite : il suffit de <strong>multiplier les deux proportions</strong> !
+        </div>
+
+        <ul class="steps-list">
+          <li><span class="step-badge">1</span>Écris chaque pourcentage en nombre à virgule (divisé par 100) : <span class="math">40 % = 0,40</span> et <span class="math">25 % = 0,25</span>.</li>
+          <li><span class="step-badge">2</span>Multiplie-les ensemble : <span class="math">0,40 × 0,25 = 0,10</span>.</li>
+          <li><span class="step-badge">3</span>Remets en pourcentage (× 100) : <span class="math">0,10 × 100 = 10 %</span> des élèves du lycée.</li>
+        </ul>
+      </article>
+
+      <!-- Notion 1.2 : Coefficient Multiplicateur & Taux d'évolution -->
+      <article class="lesson-card">
+        <h3>2. Augmenter ou baisser d'un pourcentage : le Coefficient Multiplicateur (CM)</h3>
+        <div class="metaphor-box">
+          <span class="metaphor-title">🪄 L'image du quotidien : Le bouton « Zoom » de la calculatrice</span>
+          Au lieu de calculer la réduction puis de la soustraire (2 étapes longues), les pros utilisent un seul nombre magique appelé <strong>Coefficient Multiplicateur (CM)</strong>. Le prix de départ représente toujours <strong>1</strong> (soit 100 %).
+        </div>
+
+        <div class="tip-box">
+          <span class="tip-title">⚡ Astuce Anti-Blocage : La règle du « 1 + » et « 1 − »</span>
+          • <strong>Hausse de <span class="math">t %</span> :</strong> <span class="math">CM = 1 + <span class="frac"><span class="frac-num">t</span><span class="frac-den">100</span></span></span>. Exemple : hausse de 15 % → <span class="math">CM = 1 + 0,15 = 1,15</span>.<br>
+          • <strong>Baisse de <span class="math">t %</span> :</strong> <span class="math">CM = 1 − <span class="frac"><span class="frac-num">t</span><span class="frac-den">100</span></span></span>. Exemple : solde de 30 % → <span class="math">CM = 1 − 0,30 = 0,70</span>.<br>
+          👉 Ensuite, on fait juste : <strong>Prix final = Prix départ × CM</strong> !
+        </div>
+
+        <ul class="steps-list">
+          <li><span class="step-badge">1</span><strong>Trouver le taux d'évolution entre deux prix :</strong> Formule sacrée : <span class="math">Taux = <span class="frac"><span class="frac-num">Valeur d'Arrivée − Valeur de Départ</span><span class="frac-den">Valeur de Départ</span></span></span>.</li>
+          <li><span class="step-badge">2</span>Multiplie le résultat par 100 pour l'avoir en %. Si c'est positif (<span class="math">+</span>), c'est une hausse. Si c'est négatif (<span class="math">−</span>), c'est une baisse.</li>
+        </ul>
+      </article>
+
+      <!-- Notion 1.3 : Évolutions successives et réciproques -->
+      <article class="lesson-card">
+        <h3>3. Évolutions successives &amp; Évolution réciproque (Le piège mortel du Bac)</h3>
+        <div class="tip-box">
+          <span class="tip-title">🚨 PIÈGE MORTEL : On n'additionne JAMAIS deux pourcentages !</span>
+          Si un article augmente de <strong>+20 %</strong> puis baisse de <strong>−20 %</strong>, il ne revient <strong>PAS</strong> au prix de départ !<br>
+          • <strong>Règle d'or pour enchaîner deux évolutions :</strong> On transforme chaque évolution en CM, et on <strong>MULTIPLIE les CM entre eux</strong> : <span class="math">CM<sub>global</sub> = CM<sub>1</sub> × CM<sub>2</sub></span>.<br>
+          • Pour retrouver le pourcentage global à la fin : <span class="math">Taux = (CM<sub>global</sub> − 1) × 100</span>.
+        </div>
+
+        <div class="example-box">
+          <span class="example-title">✅ Exemple résolu : +20 % puis −20 %</span>
+          • <strong>Étape 1 :</strong> Hausse de 20 % → <span class="math">CM<sub>1</sub> = 1,20</span>. Baisse de 20 % → <span class="math">CM<sub>2</sub> = 0,80</span>.<br>
+          • <strong>Étape 2 :</strong> On multiplie : <span class="math">CM<sub>global</sub> = 1,20 × 0,80 = 0,96</span>.<br>
+          • <strong>Étape 3 :</strong> <span class="math">(0,96 − 1) × 100 = −4 %</span>. Au final, le prix a <strong>baissé de 4 %</strong> !
+        </div>
+
+        <ul class="steps-list" style="margin-top: 14px;">
+          <li><span class="step-badge">★</span><strong>Évolution réciproque (Annuler une évolution) :</strong> Pour revenir au point de départ après une évolution de coefficient <span class="math">CM</span>, on utilise <span class="math">CM<sub>réciproque</sub> = <span class="frac"><span class="frac-num">1</span><span class="frac-den">CM</span></span></span>.</li>
+        </ul>
+      </article>
+
+      <!-- Zone d'exercices Module 1 -->
+      <div class="exercises-section" id="exo-zone-mod1">
+        <div class="exercises-header">
+          <h3>✏️ Exercices rapides — Vérifie si tu as compris</h3>
+          <button class="btn-regen" onclick="buildExercisesForModule('mod1')">
+            🔄 Nouveaux exercices (Nombres aléatoires)
+          </button>
+        </div>
+      
+          <div class="exo-card" id="card-mod1-exo-0">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 1 • Proportion d'une proportion</span>
+            </div>
+            <p class="exo-question">Dans un lycée, <strong>60 %</strong> des élèves sont externes, et parmi eux, <strong>10 %</strong> rentrent en bus. Quel pourcentage des élèves du lycée sont externes ET rentrent en bus ?</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod1-exo-0" placeholder="Pourcentage (ex : 12)" onkeydown="if(event.key==='Enter') validateExercise('mod1', 0)">
+          
+              <button class="btn-validate" id="btn-mod1-exo-0" onclick="validateExercise('mod1', 0)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod1-exo-0">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod1-exo-0"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod1-exo-1">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 2 • Coefficient Multiplicateur</span>
+            </div>
+            <p class="exo-question">Quel est le coefficient multiplicateur (CM) associé à une <strong>hausse de 8 %</strong> ?</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod1-exo-1" placeholder="Ex : 1,15 ou 0,85" onkeydown="if(event.key==='Enter') validateExercise('mod1', 1)">
+          
+              <button class="btn-validate" id="btn-mod1-exo-1" onclick="validateExercise('mod1', 1)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod1-exo-1">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod1-exo-1"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod1-exo-2">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 3 • Prix soldé</span>
+            </div>
+            <p class="exo-question">Un vélo coûte <strong>150 €</strong>. Il bénéficie d'une réduction de <strong>40 %</strong>. Quel est son nouveau prix ?</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod1-exo-2" placeholder="Prix en €" onkeydown="if(event.key==='Enter') validateExercise('mod1', 2)">
+          
+              <button class="btn-validate" id="btn-mod1-exo-2" onclick="validateExercise('mod1', 2)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod1-exo-2">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod1-exo-2"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod1-exo-3">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 4 • Évolutions successives</span>
+            </div>
+            <p class="exo-question">Un abonnement augmente de <strong>+20 %</strong> en janvier, puis baisse de <strong>−20 %</strong> en juin. Quel est le taux d'évolution global en % ? (Mets un signe − si c'est une baisse)</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod1-exo-3" placeholder="Ex : -4 ou 8" onkeydown="if(event.key==='Enter') validateExercise('mod1', 3)">
+          
+              <button class="btn-validate" id="btn-mod1-exo-3" onclick="validateExercise('mod1', 3)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod1-exo-3">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod1-exo-3"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         MODULE 2 : PROBABILITÉS & ARBRES
+         =================================================================== -->
+    <section id="mod2" class="module-panel">
+      <div class="module-intro">
+        <h2>Module 2 : Probabilités, Arbres pondérés &amp; Tableaux croisés</h2>
+        <p>Une probabilité est toujours un nombre compris entre <strong>0</strong> (impossible) et <strong>1</strong> (certain). Si tu trouves 1,4 ou −0,2 au Bac, tu sais tout de suite qu'il y a une erreur de calcul !</p>
+      </div>
+
+      <!-- Notion 2.1 : Vocabulaire & Contraire -->
+      <article class="lesson-card">
+        <h3>1. Le vocabulaire déminé et l'événement contraire</h3>
+        <ul class="steps-list">
+          <li><span class="step-badge">1</span><strong><span class="math">P(A)</span> :</strong> La probabilité que l'événement A se réalise.</li>
+          <li><span class="step-badge">2</span><strong>L'événement contraire <span class="math">Ā</span> (se lit « A barre ») :</strong> C'est tout ce qui n'est pas A. Règle magique : <span class="math">P(Ā) = 1 − P(A)</span>. Exemple : s'il y a 0,35 de chance qu'il pleuve, il y a <span class="math">1 − 0,35 = 0,65</span> de chance qu'il ne pleuve pas.</li>
+          <li><span class="step-badge">3</span><strong><span class="math">P(A ∩ B)</span> (« A inter B ») :</strong> Le pont <strong>∩</strong> ressemble à un « n » comme « et » : c'est la probabilité d'avoir <strong>A ET B en même temps</strong>.</li>
+        </ul>
+      </article>
+
+      <!-- Notion 2.2 : Arbre pondéré -->
+      <article class="lesson-card">
+        <h3>2. L'Arbre pondéré : les 3 règles de circulation</h3>
+        <div class="metaphor-box">
+          <span class="metaphor-title">🌳 L'image du quotidien : Les sentiers de randonnée</span>
+          Un arbre pondéré est une carte de sentiers qui se séparent. À chaque embranchement, on indique la probabilité de prendre chaque chemin.
+        </div>
+
+        <div class="svg-wrapper">
+          <svg width="520" height="210" viewBox="0 0 520 210" aria-label="Schéma d'un arbre pondéré avec les 3 règles">
+            <rect x="5" y="5" width="510" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1"></rect>
+            <!-- Nœud départ -->
+            <circle cx="40" cy="105" r="5" fill="#1e3a8a"></circle>
+            <!-- Branches niveau 1 -->
+            <line x1="40" y1="105" x2="180" y2="55" stroke="#2563eb" stroke-width="2.5"></line>
+            <line x1="40" y1="105" x2="180" y2="155" stroke="#2563eb" stroke-width="2.5"></line>
+            <text x="105" y="70" font-size="13" font-weight="bold" fill="#2563eb">0,6</text>
+            <text x="105" y="148" font-size="13" font-weight="bold" fill="#2563eb">0,4</text>
+            <!-- Accolade somme = 1 -->
+            <text x="150" y="109" font-size="11" font-weight="bold" fill="#d97706">Somme = 1</text>
+
+            <!-- Nœuds niveau 1 -->
+            <text x="192" y="60" font-size="15" font-weight="bold" fill="#0f172a">A</text>
+            <text x="192" y="160" font-size="15" font-weight="bold" fill="#0f172a">Ā</text>
+
+            <!-- Branches niveau 2 depuis A -->
+            <line x1="210" y1="55" x2="340" y2="30" stroke="#059669" stroke-width="2"></line>
+            <line x1="210" y1="55" x2="340" y2="80" stroke="#64748b" stroke-width="2"></line>
+            <text x="270" y="36" font-size="12" font-weight="bold" fill="#059669">0,8 = P_A(B)</text>
+            <text x="270" y="82" font-size="12" font-weight="bold" fill="#64748b">0,2</text>
+            <text x="352" y="35" font-size="14" font-weight="bold" fill="#0f172a">B</text>
+            <text x="352" y="85" font-size="14" font-weight="bold" fill="#0f172a">B̄</text>
+
+            <!-- Branches niveau 2 depuis Ā -->
+            <line x1="210" y1="155" x2="340" y2="130" stroke="#059669" stroke-width="2"></line>
+            <line x1="210" y1="155" x2="340" y2="180" stroke="#64748b" stroke-width="2"></line>
+            <text x="270" y="136" font-size="12" font-weight="bold" fill="#059669">0,3</text>
+            <text x="270" y="182" font-size="12" font-weight="bold" fill="#64748b">0,7</text>
+            <text x="352" y="135" font-size="14" font-weight="bold" fill="#0f172a">B</text>
+            <text x="352" y="185" font-size="14" font-weight="bold" fill="#0f172a">B̄</text>
+
+            <!-- Encadré multiplication -->
+            <rect x="378" y="16" width="128" height="32" rx="6" fill="#ecfdf5" stroke="#059669"></rect>
+            <text x="442" y="36" text-anchor="middle" font-size="12" font-weight="bold" fill="#065f46">0,6 × 0,8 = 0,48</text>
+          </svg>
+        </div>
+
+        <div class="tip-box">
+          <span class="tip-title">⚡ Astuce Anti-Blocage : Les 3 règles d'or de l'arbre</span>
+          • <strong>Règle 1 (Compléter un trou) :</strong> La somme des branches qui partent d'un même point vaut toujours <strong>1</strong>.<br>
+          • <strong>Règle 2 (Suivre un chemin) :</strong> Pour calculer la probabilité d'un chemin complet <span class="math">P(A ∩ B)</span>, on <strong>MULTIPLIE</strong> les nombres rencontrés sur le chemin (<span class="math">0,6 × 0,8 = 0,48</span>).<br>
+          • <strong>Règle 3 (Plusieurs chemins gagnants) :</strong> Si deux chemins mènent à B, on calcule chaque chemin en multipliant, puis on <strong>ADDITIONNE</strong> les résultats des chemins (<span class="math">P(B) = P(A ∩ B) + P(Ā ∩ B)</span>).
+        </div>
+      </article>
+
+      <!-- Notion 2.3 : Probabilité conditionnelle & Tableau -->
+      <article class="lesson-card">
+        <h3>3. Probabilité conditionnelle <span class="math">P<sub>A</sub>(B)</span> et Tableau à double entrée</h3>
+        <p><span class="math">P<sub>A</sub>(B)</span> se lit : <em>« Probabilité d'avoir B, <strong>sachant que</strong> A est déjà réalisé »</em>. On réduit notre univers uniquement au groupe A !</p>
+        <ul class="steps-list">
+          <li><span class="step-badge">1</span><strong>Sur un arbre :</strong> C'est tout simplement le nombre écrit sur la 2<sup>e</sup> branche qui part de A !</li>
+          <li><span class="step-badge">2</span><strong>Dans un tableau :</strong> On divise la case commune <span class="math">(A et B)</span> par le <strong>total de la ligne ou colonne A</strong> : <span class="math">P<sub>A</sub>(B) = <span class="frac"><span class="frac-num">Effectif (A et B)</span><span class="frac-den">Total de A</span></span></span>.</li>
+        </ul>
+      </article>
+
+      <!-- Zone d'exercices Module 2 -->
+      <div class="exercises-section" id="exo-zone-mod2">
+        <div class="exercises-header">
+          <h3>✏️ Exercices rapides — Vérifie si tu as compris</h3>
+          <button class="btn-regen" onclick="buildExercisesForModule('mod2')">
+            🔄 Nouveaux exercices (Nombres aléatoires)
+          </button>
+        </div>
+      
+          <div class="exo-card" id="card-mod2-exo-0">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 1 • Événement contraire</span>
+            </div>
+            <p class="exo-question">La probabilité qu'un bus arrive en retard est <span class="math">P(R) = 0,24</span>. Quelle est la probabilité <span class="math">P(R̄)</span> qu'il ne soit pas en retard ?</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod2-exo-0" placeholder="Ex : 0,65" onkeydown="if(event.key==='Enter') validateExercise('mod2', 0)">
+          
+              <button class="btn-validate" id="btn-mod2-exo-0" onclick="validateExercise('mod2', 0)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod2-exo-0">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod2-exo-0"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod2-exo-1">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 2 • Arbre pondéré (Chemin)</span>
+            </div>
+            <p class="exo-question">Sur un arbre pondéré, la branche menant à A vaut <span class="math">P(A) = 0,3</span>, et la branche suivante menant à B vaut <span class="math">P<sub>A</sub>(B) = 0,8</span>. Calculer <span class="math">P(A ∩ B)</span>.</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod2-exo-1" placeholder="Ex : 0,24" onkeydown="if(event.key==='Enter') validateExercise('mod2', 1)">
+          
+              <button class="btn-validate" id="btn-mod2-exo-1" onclick="validateExercise('mod2', 1)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod2-exo-1">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod2-exo-1"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod2-exo-2">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 3 • Arbre pondéré (Somme)</span>
+            </div>
+            <p class="exo-question">Deux chemins mènent à l'événement G : le premier chemin a pour probabilité <span class="math">0,12</span> et le second chemin a pour probabilité <span class="math">0,1</span>. Que vaut <span class="math">P(G)</span> ?</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod2-exo-2" placeholder="Ex : 0,34" onkeydown="if(event.key==='Enter') validateExercise('mod2', 2)">
+          
+              <button class="btn-validate" id="btn-mod2-exo-2" onclick="validateExercise('mod2', 2)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod2-exo-2">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod2-exo-2"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod2-exo-3">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 4 • Probabilité conditionnelle</span>
+            </div>
+            <p class="exo-question">Dans un club de sport, il y a <strong>80 filles</strong> au total, dont <strong>16</strong> pratiquent le tennis. On choisit une fille au hasard. Quelle est la probabilité qu'elle fasse du tennis ?</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod2-exo-3" placeholder="Ex : 0,4" onkeydown="if(event.key==='Enter') validateExercise('mod2', 3)">
+          
+              <button class="btn-validate" id="btn-mod2-exo-3" onclick="validateExercise('mod2', 3)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod2-exo-3">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod2-exo-3"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         MODULE 3 : CROISSANCE LINÉAIRE (SUITES ARITHMÉTIQUES & DROITES)
+         =================================================================== -->
+    <section id="mod3" class="module-panel">
+      <div class="module-intro">
+        <h2>Module 3 : Croissance Linéaire (Suites Arithmétiques &amp; Fonctions Affines)</h2>
+        <p>Ici, tout avance à un rythme <strong>régulier et constant</strong> : on ajoute (ou on enlève) toujours exactement la même quantité à chaque étape. Graphiquement, cela donne toujours une ligne droite.</p>
+      </div>
+
+      <!-- Notion 3.1 : Suites arithmétiques -->
+      <article class="lesson-card">
+        <h3>1. Les Suites Arithmétiques : l'escalier à marches régulières</h3>
+        <div class="metaphor-box">
+          <span class="metaphor-title">🪜 L'image du quotidien : Monter un escalier ou mettre 15 € par mois dans sa tirelire</span>
+          Tu commences avec <span class="math">u<sub>0</sub> = 50 €</span> dans ta tirelire. Chaque mois, tu ajoutes toujours la même somme : <span class="math">r = +15 €</span> (qu'on appelle la <strong>raison</strong>).<br>
+          Mois 1 : <span class="math">50 + 15 = 65 €</span> • Mois 2 : <span class="math">65 + 15 = 80 €</span> • Mois 3 : <span class="math">80 + 15 = 95 €</span>.
+        </div>
+
+        <ul class="steps-list">
+          <li><span class="step-badge">1</span><strong>Reconnaître une suite arithmétique :</strong> On passe d'un terme au suivant en <strong>additionnant</strong> toujours le même nombre <span class="math">r</span> (si <span class="math">r</span> est négatif, on enlève toujours le même nombre).</li>
+          <li><span class="step-badge">2</span><strong>Calculer directement n'importe quelle étape <span class="math">u<sub>n</sub></span> :</strong> Pas besoin de calculer les 20 étapes une par une ! On utilise : <span class="math">u<sub>n</sub> = u<sub>0</sub> + n × r</span>.</li>
+        </ul>
+
+        <div class="example-box">
+          <span class="example-title">✅ Exemple résolu : Combien dans la tirelire au bout de 10 mois (<span class="math">u<sub>10</sub></span>) ?</span>
+          Avec <span class="math">u<sub>0</sub> = 50</span> et <span class="math">r = 15</span> :<br>
+          <span class="math">u<sub>10</sub> = 50 + 10 × 15 = 50 + 150 = 200 €</span>.
+        </div>
+      </article>
+
+      <!-- Notion 3.2 : Fonctions affines -->
+      <article class="lesson-card">
+        <h3>2. Les Fonctions Affines (<span class="math">f(x) = ax + b</span>) : lire une droite sans effort</h3>
+        <div class="metaphor-box">
+          <span class="metaphor-title">🚕 L'image du quotidien : Le compteur d'un taxi</span>
+          Quand tu montes dans un taxi, le compteur affiche déjà <strong>4 €</strong> de prise en charge avant même de rouler (c'est <span class="math">b = 4</span>). Ensuite, tu paies <strong>2 € par kilomètre</strong> parcouru (c'est la pente <span class="math">a = 2</span>). Pour <span class="math">x</span> kilomètres, tu paies <span class="math">f(x) = 2x + 4</span>.
+        </div>
+
+        <div class="svg-wrapper">
+          <svg width="460" height="220" viewBox="0 0 460 220" aria-label="Graphique d'une fonction affine f(x) = 2x + 1">
+            <rect x="5" y="5" width="450" height="210" rx="10" fill="#f8fafc" stroke="#cbd5e1"></rect>
+            <!-- Grille légère -->
+            <line x1="140" y1="20" x2="140" y2="195" stroke="#64748b" stroke-width="1.5"></line>
+            <line x1="50" y1="160" x2="360" y2="160" stroke="#64748b" stroke-width="1.5"></line>
+            <!-- Graduations -->
+            <text x="128" y="175" font-size="11" fill="#475569">0</text>
+            <line x1="200" y1="156" x2="200" y2="164" stroke="#64748b"></line>
+            <text x="197" y="177" font-size="11" fill="#475569">1</text>
+            <line x1="260" y1="156" x2="260" y2="164" stroke="#64748b"></line>
+            <text x="257" y="177" font-size="11" fill="#475569">2</text>
+
+            <line x1="136" y1="130" x2="144" y2="130" stroke="#64748b"></line>
+            <text x="124" y="134" font-size="11" fill="#475569">1</text>
+            <line x1="136" y1="70" x2="144" y2="70" stroke="#64748b"></line>
+            <text x="124" y="74" font-size="11" fill="#475569">3</text>
+
+            <!-- Droite f(x) = 2x + 1 -->
+            <line x1="95" y1="175" x2="290" y2="-20" stroke="#2563eb" stroke-width="3" clip-path="inset(20px 0px 25px 0px)"></line>
+            <line x1="110" y1="160" x2="275" y2="25" stroke="#2563eb" stroke-width="3"></line>
+
+            <!-- Point b -->
+            <circle cx="140" cy="130" r="5" fill="#d97706"></circle>
+            <text x="48" y="125" font-size="12" font-weight="bold" fill="#d97706">b = 1 (Départ sur l'axe)</text>
+
+            <!-- Escalier de pente a -->
+            <line x1="140" y1="130" x2="200" y2="130" stroke="#059669" stroke-width="2" stroke-dasharray="4 2"></line>
+            <line x1="200" y1="130" x2="200" y2="81" stroke="#059669" stroke-width="2" stroke-dasharray="4 2"></line>
+            <text x="155" y="146" font-size="11" font-weight="bold" fill="#059669">+1 pas</text>
+            <text x="208" y="110" font-size="12" font-weight="bold" fill="#059669">Monte de a = +2</text>
+          </svg>
+        </div>
+
+        <div class="tip-box">
+          <span class="tip-title">⚡ Astuce Anti-Blocage : Lire une droite en 5 secondes</span>
+          1. Regarde où la droite coupe l'axe vertical : c'est <strong><span class="math">b</span></strong> (l'ordonnée à l'origine).<br>
+          2. Pars de ce point, avance de <strong>1 carreau vers la droite</strong>, et regarde de combien tu montes (<span class="math">a &gt; 0</span>) ou tu descends (<span class="math">a &lt; 0</span>) pour retrouver la droite : c'est <strong><span class="math">a</span></strong> (le coefficient directeur) !
+        </div>
+      </article>
+
+      <!-- Zone d'exercices Module 3 -->
+      <div class="exercises-section" id="exo-zone-mod3">
+        <div class="exercises-header">
+          <h3>✏️ Exercices rapides — Vérifie si tu as compris</h3>
+          <button class="btn-regen" onclick="buildExercisesForModule('mod3')">
+            🔄 Nouveaux exercices (Nombres aléatoires)
+          </button>
+        </div>
+      
+          <div class="exo-card" id="card-mod3-exo-0">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 1 • Suite arithmétique</span>
+            </div>
+            <p class="exo-question">Soit <span class="math">(u<sub>n</sub>)</span> une suite arithmétique de premier terme <span class="math">u<sub>0</sub> = 100</span> et de raison <span class="math">r = 15</span>. Calculer <span class="math">u<sub>8</sub></span>.</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod3-exo-0" placeholder="Valeur de u_n" onkeydown="if(event.key==='Enter') validateExercise('mod3', 0)">
+          
+              <button class="btn-validate" id="btn-mod3-exo-0" onclick="validateExercise('mod3', 0)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod3-exo-0">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod3-exo-0"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod3-exo-1">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 2 • Raison arithmétique</span>
+            </div>
+            <p class="exo-question">On donne les premiers termes d'une suite arithmétique : <span class="math">u<sub>0</sub> = 24</span>, <span class="math">u<sub>1</sub> = 31</span>, <span class="math">u<sub>2</sub> = 38</span>. Quelle est sa raison <span class="math">r</span> ?</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod3-exo-1" placeholder="Ex : 7 ou -4" onkeydown="if(event.key==='Enter') validateExercise('mod3', 1)">
+          
+              <button class="btn-validate" id="btn-mod3-exo-1" onclick="validateExercise('mod3', 1)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod3-exo-1">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod3-exo-1"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod3-exo-2">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 3 • Fonction affine</span>
+            </div>
+            <p class="exo-question">Soit la fonction affine <span class="math">f(x) = -2x + 8</span>. Calculer l'image <span class="math">f(2)</span>.</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod3-exo-2" placeholder="Résultat" onkeydown="if(event.key==='Enter') validateExercise('mod3', 2)">
+          
+              <button class="btn-validate" id="btn-mod3-exo-2" onclick="validateExercise('mod3', 2)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod3-exo-2">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod3-exo-2"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod3-exo-3">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 4 • Lecture de pente</span>
+            </div>
+            <p class="exo-question">La droite d'équation <span class="math">y = -2x + 9</span> est-elle montante (croissante) ou descendante (décroissante) ?</p>
+            <div class="exo-input-row">
+        <div class="qcm-options">
+              <label class="qcm-label">
+                <input type="radio" name="radio-mod3-exo-3" value="croissante">
+                <span>Montante (croissante)</span>
+              </label>
+            
+              <label class="qcm-label">
+                <input type="radio" name="radio-mod3-exo-3" value="decroissante">
+                <span>Descendante (décroissante)</span>
+              </label>
+            </div>
+              <button class="btn-validate" id="btn-mod3-exo-3" onclick="validateExercise('mod3', 3)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod3-exo-3">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod3-exo-3"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         MODULE 4 : CROISSANCE EXPONENTIELLE (SUITES GÉOMÉTRIQUES & q^x)
+         =================================================================== -->
+    <section id="mod4" class="module-panel">
+      <div class="module-intro">
+        <h2>Module 4 : Croissance Exponentielle (Suites Géométriques &amp; Fonctions <span class="math">q<sup>x</sup></span>)</h2>
+        <p>Contrairement à la croissance linéaire où l'on ajoute toujours le même nombre, ici on <strong>multiplie</strong> toujours par le même nombre. C'est la mécanique des intérêts bancaires, des abonnés viraux ou de la décroissance radioactive.</p>
+      </div>
+
+      <!-- Notion 4.1 : Suites géométriques -->
+      <article class="lesson-card">
+        <h3>1. Les Suites Géométriques : la boule de neige</h3>
+        <div class="metaphor-box">
+          <span class="metaphor-title">❄️ L'image du quotidien : Une vidéo qui double de vues chaque jour</span>
+          Tu publies une vidéo qui fait <span class="math">u<sub>0</sub> = 100</span> vues le jour 0. Chaque jour, les vues sont multipliées par <span class="math">q = 2</span> (la <strong>raison</strong>).<br>
+          Jour 1 : <span class="math">100 × 2 = 200</span> • Jour 2 : <span class="math">200 × 2 = 400</span> • Jour 3 : <span class="math">400 × 2 = 800</span>. Ça décolle très vite !
+        </div>
+
+        <ul class="steps-list">
+          <li><span class="step-badge">1</span><strong>La formule directe :</strong> Pour trouver directement l'étape <span class="math">n</span> : <span class="math">u<sub>n</sub> = u<sub>0</sub> × q<sup>n</sup></span> (on utilise la touche puissance <span class="math">x<sup>y</sup></span> ou <span class="math">^</span> de la calculatrice).</li>
+          <li><span class="step-badge">2</span><strong>Lien direct avec le Module 1 (Pourcentages répétés) :</strong> Dès qu'une quantité augmente ou baisse du <strong>même pourcentage chaque année</strong>, c'est une suite géométrique dont la raison <span class="math">q</span> est le <strong>Coefficient Multiplicateur</strong> !<br>
+          • Hausse de 4 % par an → suite géométrique de raison <span class="math">q = 1,04</span>.<br>
+          • Baisse de 10 % par an → suite géométrique de raison <span class="math">q = 0,90</span>.</li>
+        </ul>
+      </article>
+
+      <!-- Notion 4.2 : Fonctions exponentielles q^x -->
+      <article class="lesson-card">
+        <h3>2. Les Fonctions Exponentielles de base <span class="math">f(x) = q<sup>x</sup></span></h3>
+        <div class="svg-wrapper">
+          <svg width="480" height="200" viewBox="0 0 480 200" aria-label="Comparaison courbe exponentielle croissante q&gt;1 et décroissante 0&lt;q&lt;1">
+            <rect x="5" y="5" width="470" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1"></rect>
+            <!-- Graphique gauche : q > 1 -->
+            <line x1="40" y1="165" x2="210" y2="165" stroke="#64748b" stroke-width="1.5"></line>
+            <line x1="110" y1="25" x2="110" y2="175" stroke="#64748b" stroke-width="1.5"></line>
+            <path d="M 45 158 Q 110 150 185 32" fill="none" stroke="#059669" stroke-width="3"></path>
+            <circle cx="110" cy="144" r="4" fill="#d97706"></circle>
+            <text x="118" y="148" font-size="11" font-weight="bold" fill="#d97706">1</text>
+            <text x="125" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#059669">Si q &gt; 1 : Croissante (explose)</text>
+
+            <!-- Graphique droite : 0 < q < 1 -->
+            <line x1="270" y1="165" x2="440" y2="165" stroke="#64748b" stroke-width="1.5"></line>
+            <line x1="340" y1="25" x2="340" y2="175" stroke="#64748b" stroke-width="1.5"></line>
+            <path d="M 285 32 Q 340 150 435 159" fill="none" stroke="#dc2626" stroke-width="3"></path>
+            <circle cx="340" cy="135" r="4" fill="#d97706"></circle>
+            <text x="348" y="134" font-size="11" font-weight="bold" fill="#d97706">1</text>
+            <text x="355" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#dc2626">Si 0 &lt; q &lt; 1 : Décroissante</text>
+          </svg>
+        </div>
+
+        <div class="tip-box">
+          <span class="tip-title">⚡ Astuce Anti-Blocage : Les 3 réflexes sur <span class="math">f(x) = q<sup>x</sup></span></span>
+          • <strong>Toujours positif :</strong> <span class="math">q<sup>x</sup></span> est toujours strictement au-dessus de 0 (ça ne touche jamais 0).<br>
+          • <strong>En <span class="math">x = 0</span> :</strong> N'importe quel nombre à la puissance 0 vaut toujours <strong>1</strong> (<span class="math">q<sup>0</sup> = 1</span>).<br>
+          • <strong>Sens de variation :</strong> Si <span class="math">q &gt; 1</span> (ex : <span class="math">1,2<sup>x</sup></span>), la courbe <strong>monte</strong>. Si <span class="math">q &lt; 1</span> (ex : <span class="math">0,85<sup>x</sup></span>), la courbe <strong>descend</strong>.
+        </div>
+      </article>
+
+      <!-- Zone d'exercices Module 4 -->
+      <div class="exercises-section" id="exo-zone-mod4">
+        <div class="exercises-header">
+          <h3>✏️ Exercices rapides — Vérifie si tu as compris</h3>
+          <button class="btn-regen" onclick="buildExercisesForModule('mod4')">
+            🔄 Nouveaux exercices (Nombres aléatoires)
+          </button>
+        </div>
+      
+          <div class="exo-card" id="card-mod4-exo-0">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 1 • Suite géométrique</span>
+            </div>
+            <p class="exo-question">Soit <span class="math">(u<sub>n</sub>)</span> une suite géométrique de premier terme <span class="math">u<sub>0</sub> = 100</span> et de raison <span class="math">q = 3</span>. Calculer <span class="math">u<sub>3</sub></span>.</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod4-exo-0" placeholder="Valeur de u_n" onkeydown="if(event.key==='Enter') validateExercise('mod4', 0)">
+          
+              <button class="btn-validate" id="btn-mod4-exo-0" onclick="validateExercise('mod4', 0)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod4-exo-0">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod4-exo-0"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod4-exo-1">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 2 • Modélisation exponentielle</span>
+            </div>
+            <p class="exo-question">Une population de bactéries <strong>diminue de 15 %</strong> chaque heure. Quelle est la raison <span class="math">q</span> de la suite géométrique associée ?</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod4-exo-1" placeholder="Ex : 1,06 ou 0,88" onkeydown="if(event.key==='Enter') validateExercise('mod4', 1)">
+          
+              <button class="btn-validate" id="btn-mod4-exo-1" onclick="validateExercise('mod4', 1)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod4-exo-1">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod4-exo-1"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod4-exo-2">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 3 • Fonction exponentielle q^x</span>
+            </div>
+            <p class="exo-question">La fonction exponentielle <span class="math">f(x) = 0,4<sup>x</sup></span> est-elle croissante ou décroissante ?</p>
+            <div class="exo-input-row">
+        <div class="qcm-options">
+              <label class="qcm-label">
+                <input type="radio" name="radio-mod4-exo-2" value="croissante">
+                <span>Croissante (elle monte)</span>
+              </label>
+            
+              <label class="qcm-label">
+                <input type="radio" name="radio-mod4-exo-2" value="decroissante">
+                <span>Décroissante (elle descend)</span>
+              </label>
+            </div>
+              <button class="btn-validate" id="btn-mod4-exo-2" onclick="validateExercise('mod4', 2)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod4-exo-2">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod4-exo-2"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod4-exo-3">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 4 • Propriété de q^0</span>
+            </div>
+            <p class="exo-question">Soit <span class="math">f(x) = 1,4<sup>x</sup></span>. Que vaut <span class="math">f(0)</span> ?</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod4-exo-3" placeholder="Valeur" onkeydown="if(event.key==='Enter') validateExercise('mod4', 3)">
+          
+              <button class="btn-validate" id="btn-mod4-exo-3" onclick="validateExercise('mod4', 3)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod4-exo-3">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod4-exo-3"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        </div>
+    </section>
+
+    <!-- ===================================================================
+         MODULE 5 : ENTRAÎNEMENT MIXTE TYPE BAC
+         =================================================================== -->
+    <section id="mod5" class="module-panel">
+      <div class="module-intro">
+        <h2>Module 5 : Entraînement Mixte Type Bac (Automatismes)</h2>
+        <p>Au Bac de 1ère, les questions mélangent tous les chapitres sans prévenir. Voici une série de <strong>8 questions rapides</strong> tirées au hasard dans tout le programme. Entraîne-toi sans stress !</p>
+      </div>
+
+      <div class="bac-toolbar">
+        <div class="timer-box">
+          <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" id="timer-toggle" onchange="toggleTimer()">
+            <span>⏱️ Activer le chronomètre (optionnel)</span>
+          </label>
+          <span id="timer-display" style="display:none; background:#f1f5f9; padding:4px 10px; border-radius:8px; color:#2563eb;">00:00</span>
+        </div>
+        <div class="score-pill" id="bac-score-display">Score : 0 / 8 réussis</div>
+      </div>
+
+      <div class="exercises-section" id="exo-zone-mod5" style="margin-top: 0;">
+        <div class="exercises-header">
+          <h3>✏️ Exercices rapides — Vérifie si tu as compris</h3>
+          <button class="btn-regen" onclick="buildExercisesForModule('mod5')">
+            🔄 Nouveaux exercices (Nombres aléatoires)
+          </button>
+        </div>
+      
+          <div class="exo-card" id="card-mod5-exo-0">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 1 • Arbre pondéré (Chemin)</span>
+            </div>
+            <p class="exo-question">Sur un arbre pondéré, la branche menant à A vaut <span class="math">P(A) = 0,6</span>, et la branche suivante menant à B vaut <span class="math">P<sub>A</sub>(B) = 0,5</span>. Calculer <span class="math">P(A ∩ B)</span>.</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod5-exo-0" placeholder="Ex : 0,24" onkeydown="if(event.key==='Enter') validateExercise('mod5', 0)">
+          
+              <button class="btn-validate" id="btn-mod5-exo-0" onclick="validateExercise('mod5', 0)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod5-exo-0">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod5-exo-0"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod5-exo-1">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 2 • Pourcentages</span>
+            </div>
+            <p class="exo-question">Calculer <strong>30 %</strong> de <strong>140 €</strong> (montant d'une remise sur un sac à dos).</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod5-exo-1" placeholder="Montant en €" onkeydown="if(event.key==='Enter') validateExercise('mod5', 1)">
+          
+              <button class="btn-validate" id="btn-mod5-exo-1" onclick="validateExercise('mod5', 1)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod5-exo-1">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod5-exo-1"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod5-exo-2">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 3 • Fractions</span>
+            </div>
+            <p class="exo-question">Calculer le produit : <span class="frac"><span class="frac-num">5</span><span class="frac-den">7</span></span> × <span class="frac"><span class="frac-num">3</span><span class="frac-den">5</span></span> (écris sous forme de fraction ex: 6/35)</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod5-exo-2" placeholder="Ex : 6/35" onkeydown="if(event.key==='Enter') validateExercise('mod5', 2)">
+          
+              <button class="btn-validate" id="btn-mod5-exo-2" onclick="validateExercise('mod5', 2)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod5-exo-2">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod5-exo-2"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod5-exo-3">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 4 • Équation (Isoler x)</span>
+            </div>
+            <p class="exo-question">Résoudre l'équation : <span class="math">4x + 13 = 49</span>. Que vaut <span class="math">x</span> ?</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod5-exo-3" placeholder="Valeur de x" onkeydown="if(event.key==='Enter') validateExercise('mod5', 3)">
+          
+              <button class="btn-validate" id="btn-mod5-exo-3" onclick="validateExercise('mod5', 3)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod5-exo-3">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod5-exo-3"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod5-exo-4">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 5 • Règle des signes</span>
+            </div>
+            <p class="exo-question">Calculer : <span class="math">-7 × (-7) − 7</span></p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod5-exo-4" placeholder="Ex : 15" onkeydown="if(event.key==='Enter') validateExercise('mod5', 4)">
+          
+              <button class="btn-validate" id="btn-mod5-exo-4" onclick="validateExercise('mod5', 4)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod5-exo-4">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod5-exo-4"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod5-exo-5">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 6 • Suite géométrique</span>
+            </div>
+            <p class="exo-question">Soit <span class="math">(u<sub>n</sub>)</span> une suite géométrique de premier terme <span class="math">u<sub>0</sub> = 10</span> et de raison <span class="math">q = 2</span>. Calculer <span class="math">u<sub>5</sub></span>.</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod5-exo-5" placeholder="Valeur de u_n" onkeydown="if(event.key==='Enter') validateExercise('mod5', 5)">
+          
+              <button class="btn-validate" id="btn-mod5-exo-5" onclick="validateExercise('mod5', 5)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod5-exo-5">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod5-exo-5"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod5-exo-6">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 7 • Événement contraire</span>
+            </div>
+            <p class="exo-question">La probabilité qu'un bus arrive en retard est <span class="math">P(R) = 0,35</span>. Quelle est la probabilité <span class="math">P(R̄)</span> qu'il ne soit pas en retard ?</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod5-exo-6" placeholder="Ex : 0,65" onkeydown="if(event.key==='Enter') validateExercise('mod5', 6)">
+          
+              <button class="btn-validate" id="btn-mod5-exo-6" onclick="validateExercise('mod5', 6)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod5-exo-6">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod5-exo-6"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        
+          <div class="exo-card" id="card-mod5-exo-7">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice 8 • Prix soldé</span>
+            </div>
+            <p class="exo-question">Un vélo coûte <strong>150 €</strong>. Il bénéficie d'une réduction de <strong>20 %</strong>. Quel est son nouveau prix ?</p>
+            <div class="exo-input-row">
+        
+              <input type="text" class="exo-input" id="input-mod5-exo-7" placeholder="Prix en €" onkeydown="if(event.key==='Enter') validateExercise('mod5', 7)">
+          
+              <button class="btn-validate" id="btn-mod5-exo-7" onclick="validateExercise('mod5', 7)">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-mod5-exo-7">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-mod5-exo-7"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        </div>
+    </section>
+  </main>
+
+  <script>
+    /* =========================================================================
+       UTILITAIRES MATHÉMATIQUES & ALÉATOIRES
+       ========================================================================= */
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function pickRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function gcd(a, b) {
+      a = Math.abs(a);
+      b = Math.abs(b);
+      while (b) {
+        const t = b;
+        b = a % b;
+        a = t;
+      }
+      return a;
+    }
+
+    // Normalise la saisie de l'élève (virgule -> point, espaces supprimés, % retiré)
+    function parseUserNumber(str) {
+      if (!str) return NaN;
+      let cleaned = str.trim().replace(/\s+/g, '').replace(',', '.').replace('%', '').replace('€', '');
+      if (cleaned.includes('/')) {
+        const parts = cleaned.split('/');
+        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && Number(parts[1]) !== 0) {
+          return Number(parts[0]) / Number(parts[1]);
+        }
+      }
+      return Number(cleaned);
+    }
+
+    function isCloseEnough(userVal, expectedVal, tolerance = 0.02) {
+      if (isNaN(userVal)) return false;
+      return Math.abs(userVal - expectedVal) <= tolerance;
+    }
+
+    /* =========================================================================
+       GÉNÉRATEURS D'EXERCICES ALÉATOIRES PAR MODULE
+       ========================================================================= */
+    const generators = {
+      // ---------------- MODULE 0 : KIT DE SURVIE ----------------
+      mod0: [
+        // Exo 1 : Règle des signes
+        () => {
+          const a = randInt(-9, -2);
+          const b = randInt(-8, -2);
+          const c = randInt(3, 12);
+          const ans = a * b - c;
+          return {
+            tag: "Règle des signes",
+            type: "number",
+            question: `Calculer : <span class="math">${a} × (${b}) − ${c}</span>`,
+            placeholder: "Ex : 15",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), ans, 0.001),
+            expectedText: `${ans}`,
+            steps: [
+              `<strong>Étape 1 (Multiplication prioritaire) :</strong> <span class="math">${a} × (${b}) = +${a * b}</span> (deux signes « − » multipliés donnent un résultat positif).`,
+              `<strong>Étape 2 (Ascenseur) :</strong> On part de <span class="math">${a * b}</span> et on descend de <span class="math">${c}</span> → <span class="math">${a * b} − ${c} = ${ans}</span>.`,
+              `<strong>Résultat final :</strong> <span class="math">${ans}</span>`
+            ]
+          };
+        },
+        // Exo 2 : Multiplication de fractions
+        () => {
+          const n1 = pickRandom([2, 3, 4, 5]);
+          const d1 = pickRandom([3, 5, 7]);
+          const n2 = pickRandom([2, 3, 4]);
+          const d2 = pickRandom([5, 7, 9]);
+          const num = n1 * n2;
+          const den = d1 * d2;
+          const g = gcd(num, den);
+          const sNum = num / g;
+          const sDen = den / g;
+          const ansFloat = sNum / sDen;
+          return {
+            tag: "Fractions",
+            type: "number",
+            question: `Calculer le produit : <span class="frac"><span class="frac-num">${n1}</span><span class="frac-den">${d1}</span></span> × <span class="frac"><span class="frac-num">${n2}</span><span class="frac-den">${d2}</span></span> (écris sous forme de fraction ex: 6/35)`,
+            placeholder: "Ex : 6/35",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), ansFloat, 0.001),
+            expectedText: `${sNum}/${sDen}`,
+            steps: [
+              `<strong>Étape 1 :</strong> Pour multiplier deux fractions, on multiplie <strong>tout droit</strong> (haut × haut et bas × bas).`,
+              `<strong>Étape 2 :</strong> En haut : <span class="math">${n1} × ${n2} = ${num}</span>. En bas : <span class="math">${d1} × ${d2} = ${den}</span>.`,
+              g > 1
+                ? `<strong>Étape 3 (Simplification par ${g}) :</strong> <span class="math">${num}/${den} = ${sNum}/${sDen}</span>.`
+                : `<strong>Résultat final :</strong> <span class="math">${sNum}/${sDen}</span>`
+            ]
+          };
+        },
+        // Exo 3 : Pourcentage simple
+        () => {
+          const pct = pickRandom([10, 20, 25, 30, 50]);
+          const base = pickRandom([40, 60, 80, 120, 140, 200, 300]);
+          const item = pickRandom(["un sweat", "une paire de baskets", "un casque audio", "un sac à dos"]);
+          const ans = (base * pct) / 100;
+          return {
+            tag: "Pourcentages",
+            type: "number",
+            question: `Calculer <strong>${pct} %</strong> de <strong>${base} €</strong> (montant d'une remise sur ${item}).`,
+            placeholder: "Montant en €",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), ans, 0.01),
+            expectedText: `${ans} €`,
+            steps: [
+              `<strong>Étape 1 :</strong> « ${pct} % » signifie <span class="math">${pct} ÷ 100 = ${pct / 100}</span>.`,
+              `<strong>Étape 2 :</strong> On multiplie le prix par ce nombre : <span class="math">${base} × ${pct / 100} = ${ans}</span>.`,
+              `<strong>Résultat final :</strong> <span class="math">${ans} €</span>`
+            ]
+          };
+        },
+        // Exo 4 : Équation simple ax + b = c
+        () => {
+          const a = randInt(2, 7);
+          const xSol = randInt(2, 9);
+          const b = randInt(3, 15);
+          const c = a * xSol + b;
+          return {
+            tag: "Équation (Isoler x)",
+            type: "number",
+            question: `Résoudre l'équation : <span class="math">${a}x + ${b} = ${c}</span>. Que vaut <span class="math">x</span> ?`,
+            placeholder: "Valeur de x",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), xSol, 0.001),
+            expectedText: `x = ${xSol}`,
+            steps: [
+              `<strong>Étape 1 (Traverser le pont =) :</strong> Le <span class="math">+ ${b}</span> passe de l'autre côté et devient <span class="math">− ${b}</span> → <span class="math">${a}x = ${c} − ${b}</span>, soit <span class="math">${a}x = ${c - b}</span>.`,
+              `<strong>Étape 2 (Diviser par le nombre devant x) :</strong> <span class="math">x = ${c - b} ÷ ${a} = ${xSol}</span>.`,
+              `<strong>Résultat final :</strong> <span class="math">x = ${xSol}</span>`
+            ]
+          };
+        }
+      ],
+
+      // ---------------- MODULE 1 : PROPORTIONS & ÉVOLUTIONS ----------------
+      mod1: [
+        // Exo 1 : Proportion d'une proportion
+        () => {
+          const p1 = pickRandom([20, 30, 40, 50, 60]);
+          const p2 = pickRandom([10, 20, 25, 50]);
+          const ans = (p1 * p2) / 100;
+          return {
+            tag: "Proportion d'une proportion",
+            type: "number",
+            question: `Dans un lycée, <strong>${p1} %</strong> des élèves sont externes, et parmi eux, <strong>${p2} %</strong> rentrent en bus. Quel pourcentage des élèves du lycée sont externes ET rentrent en bus ?`,
+            placeholder: "Pourcentage (ex : 12)",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), ans, 0.05),
+            expectedText: `${ans} %`,
+            steps: [
+              `<strong>Étape 1 :</strong> On écrit les deux pourcentages en nombres décimaux : <span class="math">${p1 / 100}</span> et <span class="math">${p2 / 100}</span>.`,
+              `<strong>Étape 2 :</strong> On multiplie les deux proportions : <span class="math">${p1 / 100} × ${p2 / 100} = ${(p1 * p2) / 10000}</span>.`,
+              `<strong>Étape 3 (× 100 pour le %) :</strong> <span class="math">${(p1 * p2) / 10000} × 100 = ${ans} %</span>.`
+            ]
+          };
+        },
+        // Exo 2 : Coefficient multiplicateur
+        () => {
+          const isIncrease = Math.random() > 0.5;
+          const pct = pickRandom([5, 8, 12, 15, 25, 35, 40]);
+          const cm = isIncrease ? +(1 + pct / 100).toFixed(2) : +(1 - pct / 100).toFixed(2);
+          return {
+            tag: "Coefficient Multiplicateur",
+            type: "number",
+            question: `Quel est le coefficient multiplicateur (CM) associé à une <strong>${isIncrease ? 'hausse' : 'baisse'} de ${pct} %</strong> ?`,
+            placeholder: "Ex : 1,15 ou 0,85",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), cm, 0.005),
+            expectedText: `${cm.toString().replace('.', ',')}`,
+            steps: [
+              isIncrease
+                ? `<strong>Étape 1 :</strong> C'est une hausse, donc on ajoute : <span class="math">CM = 1 + ${pct}/100 = 1 + ${pct / 100}</span>.`
+                : `<strong>Étape 1 :</strong> C'est une baisse, donc on soustrait : <span class="math">CM = 1 − ${pct}/100 = 1 − ${pct / 100}</span>.`,
+              `<strong>Résultat final :</strong> <span class="math">CM = ${cm.toString().replace('.', ',')}</span>`
+            ]
+          };
+        },
+        // Exo 3 : Calculer un prix après évolution
+        () => {
+          const startPrice = pickRandom([50, 80, 120, 150, 200]);
+          const pct = pickRandom([10, 20, 30, 40]);
+          const cm = +(1 - pct / 100).toFixed(2);
+          const finalPrice = +(startPrice * cm).toFixed(2);
+          return {
+            tag: "Prix soldé",
+            type: "number",
+            question: `Un vélo coûte <strong>${startPrice} €</strong>. Il bénéficie d'une réduction de <strong>${pct} %</strong>. Quel est son nouveau prix ?`,
+            placeholder: "Prix en €",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), finalPrice, 0.05),
+            expectedText: `${finalPrice} €`,
+            steps: [
+              `<strong>Étape 1 (Trouver le CM) :</strong> Baisse de ${pct} % → <span class="math">CM = 1 − ${pct / 100} = ${cm.toString().replace('.', ',')}</span>.`,
+              `<strong>Étape 2 (Multiplier) :</strong> <span class="math">${startPrice} × ${cm.toString().replace('.', ',')} = ${finalPrice} €</span>.`,
+              `<strong>Résultat final :</strong> <span class="math">${finalPrice} €</span>`
+            ]
+          };
+        },
+        // Exo 4 : Évolutions successives
+        () => {
+          const p1 = pickRandom([10, 20, 30]);
+          const p2 = pickRandom([10, 20, 30]);
+          const cm1 = +(1 + p1 / 100).toFixed(2);
+          const cm2 = +(1 - p2 / 100).toFixed(2);
+          const cmGlob = +(cm1 * cm2).toFixed(4);
+          const globalPct = +((cmGlob - 1) * 100).toFixed(2);
+          return {
+            tag: "Évolutions successives",
+            type: "number",
+            question: `Un abonnement augmente de <strong>+${p1} %</strong> en janvier, puis baisse de <strong>−${p2} %</strong> en juin. Quel est le taux d'évolution global en % ? (Mets un signe − si c'est une baisse)`,
+            placeholder: "Ex : -4 ou 8",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), globalPct, 0.1),
+            expectedText: `${globalPct.toString().replace('.', ',')} %`,
+            steps: [
+              `<strong>Étape 1 :</strong> On transforme chaque évolution en CM : <span class="math">CM<sub>1</sub> = ${cm1.toString().replace('.', ',')}</span> et <span class="math">CM<sub>2</sub> = ${cm2.toString().replace('.', ',')}</span>.`,
+              `<strong>Étape 2 (On multiplie les CM) :</strong> <span class="math">CM<sub>global</sub> = ${cm1.toString().replace('.', ',')} × ${cm2.toString().replace('.', ',')} = ${cmGlob.toString().replace('.', ',')}</span>.`,
+              `<strong>Étape 3 :</strong> <span class="math">(${cmGlob.toString().replace('.', ',')} − 1) × 100 = ${globalPct.toString().replace('.', ',')} %</span>.`
+            ]
+          };
+        }
+      ],
+
+      // ---------------- MODULE 2 : PROBABILITÉS & ARBRES ----------------
+      mod2: [
+        // Exo 1 : Événement contraire
+        () => {
+          const pA = pickRandom([0.15, 0.24, 0.35, 0.42, 0.68, 0.75]);
+          const ans = +(1 - pA).toFixed(2);
+          return {
+            tag: "Événement contraire",
+            type: "number",
+            question: `La probabilité qu'un bus arrive en retard est <span class="math">P(R) = ${pA.toString().replace('.', ',')}</span>. Quelle est la probabilité <span class="math">P(R̄)</span> qu'il ne soit pas en retard ?`,
+            placeholder: "Ex : 0,65",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), ans, 0.005),
+            expectedText: `${ans.toString().replace('.', ',')}`,
+            steps: [
+              `<strong>Étape 1 :</strong> La somme d'un événement et de son contraire vaut toujours <strong>1</strong>.`,
+              `<strong>Étape 2 :</strong> <span class="math">P(R̄) = 1 − ${pA.toString().replace('.', ',')} = ${ans.toString().replace('.', ',')}</span>.`
+            ]
+          };
+        },
+        // Exo 2 : Chemin sur un arbre (Multiplication)
+        () => {
+          const pA = pickRandom([0.2, 0.3, 0.4, 0.5, 0.6, 0.7]);
+          const pAB = pickRandom([0.1, 0.2, 0.3, 0.4, 0.5, 0.8]);
+          const ans = +(pA * pAB).toFixed(2);
+          return {
+            tag: "Arbre pondéré (Chemin)",
+            type: "number",
+            question: `Sur un arbre pondéré, la branche menant à A vaut <span class="math">P(A) = ${pA.toString().replace('.', ',')}</span>, et la branche suivante menant à B vaut <span class="math">P<sub>A</sub>(B) = ${pAB.toString().replace('.', ',')}</span>. Calculer <span class="math">P(A ∩ B)</span>.`,
+            placeholder: "Ex : 0,24",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), ans, 0.005),
+            expectedText: `${ans.toString().replace('.', ',')}`,
+            steps: [
+              `<strong>Étape 1 (Règle 2 de l'arbre) :</strong> Pour calculer la probabilité d'un chemin complet <span class="math">P(A ∩ B)</span>, on <strong>multiplie</strong> les branches du chemin.`,
+              `<strong>Étape 2 :</strong> <span class="math">P(A ∩ B) = ${pA.toString().replace('.', ',')} × ${pAB.toString().replace('.', ',')} = ${ans.toString().replace('.', ',')}</span>.`
+            ]
+          };
+        },
+        // Exo 3 : Probabilité totale (2 chemins)
+        () => {
+          const p1 = pickRandom([0.12, 0.15, 0.24, 0.30]);
+          const p2 = pickRandom([0.08, 0.10, 0.14, 0.20]);
+          const ans = +(p1 + p2).toFixed(2);
+          return {
+            tag: "Arbre pondéré (Somme)",
+            type: "number",
+            question: `Deux chemins mènent à l'événement G : le premier chemin a pour probabilité <span class="math">${p1.toString().replace('.', ',')}</span> et le second chemin a pour probabilité <span class="math">${p2.toString().replace('.', ',')}</span>. Que vaut <span class="math">P(G)</span> ?`,
+            placeholder: "Ex : 0,34",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), ans, 0.005),
+            expectedText: `${ans.toString().replace('.', ',')}`,
+            steps: [
+              `<strong>Étape 1 (Règle 3 de l'arbre) :</strong> Quand plusieurs chemins mènent au même résultat, on <strong>additionne</strong> leurs probabilités.`,
+              `<strong>Étape 2 :</strong> <span class="math">P(G) = ${p1.toString().replace('.', ',')} + ${p2.toString().replace('.', ',')} = ${ans.toString().replace('.', ',')}</span>.`
+            ]
+          };
+        },
+        // Exo 4 : Lecture dans un tableau croisé
+        () => {
+          const totalFilles = pickRandom([40, 50, 80, 100]);
+          const fillesSport = Math.round(totalFilles * pickRandom([0.2, 0.3, 0.4, 0.5]));
+          const ans = +(fillesSport / totalFilles).toFixed(2);
+          return {
+            tag: "Probabilité conditionnelle",
+            type: "number",
+            question: `Dans un club de sport, il y a <strong>${totalFilles} filles</strong> au total, dont <strong>${fillesSport}</strong> pratiquent le tennis. On choisit une fille au hasard. Quelle est la probabilité qu'elle fasse du tennis ?`,
+            placeholder: "Ex : 0,4",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), ans, 0.01),
+            expectedText: `${ans.toString().replace('.', ',')}`,
+            steps: [
+              `<strong>Étape 1 :</strong> On sait que la personne choisie est une fille : notre total de référence est donc <strong>${totalFilles}</strong>.`,
+              `<strong>Étape 2 :</strong> Parmi elles, <strong>${fillesSport}</strong> font du tennis.`,
+              `<strong>Résultat final :</strong> <span class="math">${fillesSport} ÷ ${totalFilles} = ${ans.toString().replace('.', ',')}</span>.`
+            ]
+          };
+        }
+      ],
+
+      // ---------------- MODULE 3 : CROISSANCE LINÉAIRE ----------------
+      mod3: [
+        // Exo 1 : Terme d'une suite arithmétique
+        () => {
+          const u0 = pickRandom([20, 50, 100, 120]);
+          const r = pickRandom([5, 10, 15, 25]);
+          const n = pickRandom([6, 8, 10, 12]);
+          const ans = u0 + n * r;
+          return {
+            tag: "Suite arithmétique",
+            type: "number",
+            question: `Soit <span class="math">(u<sub>n</sub>)</span> une suite arithmétique de premier terme <span class="math">u<sub>0</sub> = ${u0}</span> et de raison <span class="math">r = ${r}</span>. Calculer <span class="math">u<sub>${n}</sub></span>.`,
+            placeholder: "Valeur de u_n",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), ans, 0.001),
+            expectedText: `${ans}`,
+            steps: [
+              `<strong>Étape 1 (Formule) :</strong> <span class="math">u<sub>n</sub> = u<sub>0</sub> + n × r</span>.`,
+              `<strong>Étape 2 (Remplacer) :</strong> <span class="math">u<sub>${n}</sub> = ${u0} + ${n} × ${r} = ${u0} + ${n * r}</span>.`,
+              `<strong>Résultat final :</strong> <span class="math">${ans}</span>`
+            ]
+          };
+        },
+        // Exo 2 : Trouver la raison d'une suite arithmétique
+        () => {
+          const u0 = randInt(10, 40);
+          const r = pickRandom([-6, -4, 7, 9, 12]);
+          const u1 = u0 + r;
+          const u2 = u1 + r;
+          return {
+            tag: "Raison arithmétique",
+            type: "number",
+            question: `On donne les premiers termes d'une suite arithmétique : <span class="math">u<sub>0</sub> = ${u0}</span>, <span class="math">u<sub>1</sub> = ${u1}</span>, <span class="math">u<sub>2</sub> = ${u2}</span>. Quelle est sa raison <span class="math">r</span> ?`,
+            placeholder: "Ex : 7 ou -4",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), r, 0.001),
+            expectedText: `r = ${r}`,
+            steps: [
+              `<strong>Étape 1 :</strong> Pour trouver ce qu'on ajoute à chaque pas, on fait <span class="math">u<sub>1</sub> − u<sub>0</sub></span>.`,
+              `<strong>Étape 2 :</strong> <span class="math">r = ${u1} − ${u0} = ${r}</span>.`
+            ]
+          };
+        },
+        // Exo 3 : Image par une fonction affine
+        () => {
+          const a = pickRandom([-3, -2, 2, 3, 4, 5]);
+          const b = pickRandom([-4, -1, 2, 5, 8]);
+          const x = randInt(2, 6);
+          const ans = a * x + b;
+          const bSign = b >= 0 ? `+ ${b}` : `− ${Math.abs(b)}`;
+          return {
+            tag: "Fonction affine",
+            type: "number",
+            question: `Soit la fonction affine <span class="math">f(x) = ${a}x ${bSign}</span>. Calculer l'image <span class="math">f(${x})</span>.`,
+            placeholder: "Résultat",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), ans, 0.001),
+            expectedText: `${ans}`,
+            steps: [
+              `<strong>Étape 1 :</strong> On remplace <span class="math">x</span> par <span class="math">${x}</span> dans la formule.`,
+              `<strong>Étape 2 :</strong> <span class="math">f(${x}) = ${a} × ${x} ${bSign} = ${a * x} ${bSign} = ${ans}</span>.`
+            ]
+          };
+        },
+        // Exo 4 : QCM sens de variation droite
+        () => {
+          const isNeg = Math.random() > 0.5;
+          const a = isNeg ? pickRandom([-5, -3, -2]) : pickRandom([2, 4, 6]);
+          const b = randInt(1, 10);
+          return {
+            tag: "Lecture de pente",
+            type: "qcm",
+            question: `La droite d'équation <span class="math">y = ${a}x + ${b}</span> est-elle montante (croissante) ou descendante (décroissante) ?`,
+            options: [
+              { value: "croissante", label: "Montante (croissante)" },
+              { value: "decroissante", label: "Descendante (décroissante)" }
+            ],
+            correctValue: isNeg ? "decroissante" : "croissante",
+            expectedText: isNeg ? "Descendante (décroissante)" : "Montante (croissante)",
+            steps: [
+              `<strong>Étape 1 :</strong> On regarde uniquement le nombre <span class="math">a</span> devant <span class="math">x</span> : ici <span class="math">a = ${a}</span>.`,
+              isNeg
+                ? `<strong>Étape 2 :</strong> Comme <span class="math">${a} &lt; 0</span> (négatif), la droite descend.`
+                : `<strong>Étape 2 :</strong> Comme <span class="math">${a} &gt; 0</span> (positif), la droite monte.`
+            ]
+          };
+        }
+      ],
+
+      // ---------------- MODULE 4 : CROISSANCE EXPONENTIELLE ----------------
+      mod4: [
+        // Exo 1 : Terme d'une suite géométrique
+        () => {
+          const u0 = pickRandom([10, 50, 100, 200]);
+          const q = pickRandom([2, 3]);
+          const n = pickRandom([3, 4, 5]);
+          const ans = u0 * Math.pow(q, n);
+          return {
+            tag: "Suite géométrique",
+            type: "number",
+            question: `Soit <span class="math">(u<sub>n</sub>)</span> une suite géométrique de premier terme <span class="math">u<sub>0</sub> = ${u0}</span> et de raison <span class="math">q = ${q}</span>. Calculer <span class="math">u<sub>${n}</sub></span>.`,
+            placeholder: "Valeur de u_n",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), ans, 0.01),
+            expectedText: `${ans}`,
+            steps: [
+              `<strong>Étape 1 (Formule) :</strong> <span class="math">u<sub>n</sub> = u<sub>0</sub> × q<sup>n</sup></span>.`,
+              `<strong>Étape 2 :</strong> <span class="math">u<sub>${n}</sub> = ${u0} × ${q}<sup>${n}</sup> = ${u0} × ${Math.pow(q, n)} = ${ans}</span>.`
+            ]
+          };
+        },
+        // Exo 2 : Lien pourcentage -> raison q
+        () => {
+          const isUp = Math.random() > 0.5;
+          const pct = pickRandom([3, 6, 8, 12, 15]);
+          const q = isUp ? +(1 + pct / 100).toFixed(2) : +(1 - pct / 100).toFixed(2);
+          return {
+            tag: "Modélisation exponentielle",
+            type: "number",
+            question: `Une population de bactéries <strong>${isUp ? 'augmente' : 'diminue'} de ${pct} %</strong> chaque heure. Quelle est la raison <span class="math">q</span> de la suite géométrique associée ?`,
+            placeholder: "Ex : 1,06 ou 0,88",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), q, 0.005),
+            expectedText: `q = ${q.toString().replace('.', ',')}`,
+            steps: [
+              `<strong>Étape 1 :</strong> Une variation répétée d'un même pourcentage correspond à une suite géométrique dont la raison <span class="math">q</span> est le Coefficient Multiplicateur.`,
+              isUp
+                ? `<strong>Étape 2 :</strong> Hausse de ${pct} % → <span class="math">q = 1 + ${pct}/100 = ${q.toString().replace('.', ',')}</span>.`
+                : `<strong>Étape 2 :</strong> Baisse de ${pct} % → <span class="math">q = 1 − ${pct}/100 = ${q.toString().replace('.', ',')}</span>.`
+            ]
+          };
+        },
+        // Exo 3 : QCM Variation fonction q^x
+        () => {
+          const isUp = Math.random() > 0.5;
+          const q = isUp ? pickRandom([1.05, 1.3, 2.5]) : pickRandom([0.4, 0.75, 0.92]);
+          return {
+            tag: "Fonction exponentielle q^x",
+            type: "qcm",
+            question: `La fonction exponentielle <span class="math">f(x) = ${q.toString().replace('.', ',')}<sup>x</sup></span> est-elle croissante ou décroissante ?`,
+            options: [
+              { value: "croissante", label: "Croissante (elle monte)" },
+              { value: "decroissante", label: "Décroissante (elle descend)" }
+            ],
+            correctValue: isUp ? "croissante" : "decroissante",
+            expectedText: isUp ? "Croissante (elle monte)" : "Décroissante (elle descend)",
+            steps: [
+              `<strong>Étape 1 :</strong> On compare la base <span class="math">q = ${q.toString().replace('.', ',')}</span> au nombre <strong>1</strong>.`,
+              isUp
+                ? `<strong>Étape 2 :</strong> Comme <span class="math">${q.toString().replace('.', ',')} &gt; 1</span>, la fonction est <strong>croissante</strong>.`
+                : `<strong>Étape 2 :</strong> Comme <span class="math">0 &lt; ${q.toString().replace('.', ',')} &lt; 1</span>, la fonction est <strong>décroissante</strong>.`
+            ]
+          };
+        },
+        // Exo 4 : Valeur en x = 0
+        () => {
+          const q = pickRandom([1.4, 3, 0.65, 7]);
+          return {
+            tag: "Propriété de q^0",
+            type: "number",
+            question: `Soit <span class="math">f(x) = ${q.toString().replace('.', ',')}<sup>x</sup></span>. Que vaut <span class="math">f(0)</span> ?`,
+            placeholder: "Valeur",
+            check: (raw) => isCloseEnough(parseUserNumber(raw), 1, 0.001),
+            expectedText: `1`,
+            steps: [
+              `<strong>Règle d'or :</strong> N'importe quel nombre strictement positif élevé à la puissance 0 vaut toujours <strong>1</strong>.`,
+              `<strong>Résultat final :</strong> <span class="math">${q.toString().replace('.', ',')}<sup>0</sup> = 1</span>.`
+            ]
+          };
+        }
+      ]
+    };
+
+    /* =========================================================================
+       RENDU DES EXERCICES & LOGIQUE "RÉPONSE EN PREMIER"
+       ========================================================================= */
+    const activeExercises = {};
+    let bacScore = 0;
+
+    function buildExercisesForModule(modId) {
+      const container = document.getElementById(`exo-zone-${modId}`);
+      if (!container) return;
+
+      let exoList = [];
+      if (modId === 'mod5') {
+        bacScore = 0;
+        updateBacScore();
+        // Tirer 8 questions variées dans les 5 modules
+        const pool = [
+          ...generators.mod0,
+          ...generators.mod1,
+          ...generators.mod2,
+          ...generators.mod3,
+          ...generators.mod4
+        ];
+        for (let i = 0; i < 8; i++) {
+          const gen = pool[(i * 3 + randInt(0, pool.length - 1)) % pool.length];
+          exoList.push(gen());
+        }
+      } else {
+        exoList = generators[modId].map(gen => gen());
+      }
+
+      activeExercises[modId] = exoList;
+
+      let html = `
+        <div class="exercises-header">
+          <h3>✏️ Exercices rapides — Vérifie si tu as compris</h3>
+          <button class="btn-regen" onclick="buildExercisesForModule('${modId}')">
+            🔄 Nouveaux exercices (Nombres aléatoires)
+          </button>
+        </div>
+      `;
+
+      exoList.forEach((exo, idx) => {
+        const uid = `${modId}-exo-${idx}`;
+        html += `
+          <div class="exo-card" id="card-${uid}">
+            <div class="exo-header">
+              <span class="exo-badge">Exercice ${idx + 1} • ${exo.tag}</span>
+            </div>
+            <p class="exo-question">${exo.question}</p>
+            <div class="exo-input-row">
+        `;
+
+        if (exo.type === 'number') {
+          html += `
+              <input type="text" class="exo-input" id="input-${uid}" placeholder="${exo.placeholder || 'Ta réponse...'}" onkeydown="if(event.key==='Enter') validateExercise('${modId}', ${idx})">
+          `;
+        } else if (exo.type === 'qcm') {
+          html += `<div class="qcm-options">`;
+          exo.options.forEach(opt => {
+            html += `
+              <label class="qcm-label">
+                <input type="radio" name="radio-${uid}" value="${opt.value}">
+                <span>${opt.label}</span>
+              </label>
+            `;
+          });
+          html += `</div>`;
+        }
+
+        html += `
+              <button class="btn-validate" id="btn-${uid}" onclick="validateExercise('${modId}', ${idx})">
+                Valider ma réponse
+              </button>
+            </div>
+            <div class="exo-warning" id="warn-${uid}">
+              ⚠️ Écris d'abord une réponse (même au hasard si tu hésites !) pour débloquer la correction expliquée.
+            </div>
+            <div class="exo-feedback" id="fb-${uid}"></div>
+
+            <!-- Zone vierge visible uniquement à l'impression PDF -->
+            <div class="print-blank-area">
+              <strong>Ta réponse :</strong> ...................................................................... &nbsp;&nbsp;&nbsp; <strong>Tes calculs :</strong>
+              <div class="print-lines">
+                ........................................................................................................................................................................<br>
+                ........................................................................................................................................................................
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function validateExercise(modId, idx) {
+      const exo = activeExercises[modId][idx];
+      const uid = `${modId}-exo-${idx}`;
+      const warnEl = document.getElementById(`warn-${uid}`);
+      const fbEl = document.getElementById(`fb-${uid}`);
+      const btnEl = document.getElementById(`btn-${uid}`);
+
+      let userRaw = "";
+      let isCorrect = false;
+
+      if (exo.type === 'number') {
+        const inputEl = document.getElementById(`input-${uid}`);
+        userRaw = inputEl.value.trim();
+        if (!userRaw) {
+          warnEl.style.display = 'block';
+          inputEl.focus();
+          return;
+        }
+        warnEl.style.display = 'none';
+        inputEl.disabled = true;
+        isCorrect = exo.check(userRaw);
+      } else if (exo.type === 'qcm') {
+        const selected = document.querySelector(`input[name="radio-${uid}"]:checked`);
+        if (!selected) {
+          warnEl.style.display = 'block';
+          return;
+        }
+        warnEl.style.display = 'none';
+        document.querySelectorAll(`input[name="radio-${uid}"]`).forEach(r => r.disabled = true);
+        userRaw = selected.parentElement.innerText.trim();
+        isCorrect = (selected.value === exo.correctValue);
+      }
+
+      btnEl.disabled = true;
+
+      if (modId === 'mod5' && isCorrect) {
+        bacScore++;
+        updateBacScore();
+      }
+
+      fbEl.className = `exo-feedback ${isCorrect ? 'correct' : 'wrong'}`;
+      fbEl.style.display = 'block';
+
+      const statusText = isCorrect
+        ? `🎉 Bravo ! Ta réponse (${userRaw}) est juste !`
+        : `❌ Pas tout à fait (tu as répondu : ${userRaw}). La bonne réponse était : ${exo.expectedText}. Voici comment faire :`;
+
+      const stepsHtml = exo.steps.map(s => `<li>${s}</li>`).join('');
+      fbEl.innerHTML = `
+        <span class="feedback-status">${statusText}</span>
+        <ul class="correction-steps">${stepsHtml}</ul>
+      `;
+    }
+
+    function updateBacScore() {
+      const el = document.getElementById('bac-score-display');
+      if (el) {
+        el.textContent = `Score : ${bacScore} / 8 réussis`;
+      }
+    }
+
+    /* =========================================================================
+       NAVIGATION PAR ONGLETS, CHRONOMÈTRE & IMPRESSION PDF
+       ========================================================================= */
+    function switchTab(tabId) {
+      document.querySelectorAll('.module-panel').forEach(panel => {
+        panel.classList.remove('active');
+      });
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      const targetPanel = document.getElementById(tabId);
+      const targetBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+      if (targetPanel) targetPanel.classList.add('active');
+      if (targetBtn) targetBtn.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function printCurrentModule() {
+      document.body.classList.remove('print-all-modules');
+      window.print();
+    }
+
+    function printAllModules() {
+      document.body.classList.add('print-all-modules');
+      window.print();
+      setTimeout(() => {
+        document.body.classList.remove('print-all-modules');
+      }, 500);
+    }
+
+    function downloadSelfHTML() {
+      const docHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Cap_Bac_Maths_1ere_Generale.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Chronomètre optionnel pour le module 5
+    let timerInterval = null;
+    let secondsElapsed = 0;
+
+    function toggleTimer() {
+      const isChecked = document.getElementById('timer-toggle').checked;
+      const display = document.getElementById('timer-display');
+      if (isChecked) {
+        secondsElapsed = 0;
+        display.style.display = 'inline-block';
+        display.textContent = '00:00';
+        timerInterval = setInterval(() => {
+          secondsElapsed++;
+          const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+          const secs = String(secondsElapsed % 60).padStart(2, '0');
+          display.textContent = `${mins}:${secs}`;
+        }, 1000);
+      } else {
+        clearInterval(timerInterval);
+        display.style.display = 'none';
+      }
+    }
+
+    // Initialisation au chargement de la page
+    window.addEventListener('DOMContentLoaded', () => {
+      ['mod0', 'mod1', 'mod2', 'mod3', 'mod4', 'mod5'].forEach(modId => {
+        buildExercisesForModule(modId);
+      });
+    });
+  </script>
+
+</body></html>
